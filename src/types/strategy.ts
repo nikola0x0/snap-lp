@@ -16,8 +16,9 @@ export interface StrategyTemplate {
 export interface BinConfiguration {
   binCount: number
   rangeWidth: number // Percentage around current price
-  distribution: 'uniform' | 'concentrated' | 'weighted'
+  distribution: 'uniform' | 'concentrated' | 'weighted' | 'spot' | 'curve' | 'bid-ask'
   concentrationFactor?: number // For concentrated strategies
+  binDistribution: Array<{binId: number; weight: number}> // Actual bin weights for DLMM
 }
 
 export interface StrategyParameters {
@@ -27,6 +28,8 @@ export interface StrategyParameters {
   stopLossThreshold?: number // Percentage
   takeProfitThreshold?: number // Percentage
   autoRebalance: boolean
+  defaultTokenXPercentage: number // 0-100, default X/Y split
+  slippage: number // Default slippage tolerance
 }
 
 // Pool and market data types
