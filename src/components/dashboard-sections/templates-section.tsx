@@ -8,14 +8,14 @@ import { Input } from '../ui/input'
 import { Card, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { useAppStore } from '@/store/app-store'
-import { BarChart3, Filter, Search, TrendingUp, Trophy, ArrowLeft, CheckCircle } from 'lucide-react'
+import { BarChart3, Filter, Search, TrendingUp, Trophy, ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react'
 
 type FilterType = 'all' | 'Conservative' | 'Balanced' | 'Aggressive'
 
 export function TemplatesSection() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
-  const { selectedPool, setStep, getTokenPairSymbol } = useAppStore()
+  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol } = useAppStore()
 
   const filteredTemplates = STRATEGY_TEMPLATES.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -164,6 +164,45 @@ export function TemplatesSection() {
       </div>
 
       <TemplatesGallery templates={filteredTemplates} />
+
+      {/* Enhanced Strategy Selection Summary */}
+      {selectedTemplate && (
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Strategy Selected</h3>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>{selectedTemplate.name}</strong> • {selectedTemplate.riskLevel} Risk • Est. APR: {selectedTemplate.estimatedAPR}%
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setStep('simulator')}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Test in Simulator
+                </Button>
+                <Button
+                  onClick={() => setStep('deploy')}
+                  size="lg"
+                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  Deploy Strategy
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

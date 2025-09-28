@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { useAppStore } from '@/store/app-store'
 import { DLMMService } from '@/services/dlmm'
+import { priceService, type TokenPrice } from '@/services/price-service'
+import { TokenSwapModal } from '../token-swap-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -56,6 +58,30 @@ export function DeploySection() {
     autoRebalance: selectedTemplate?.parameters.autoRebalance || false
   })
   const [isDeploying, setIsDeploying] = useState(false)
+  const [showTokenSwapModal, setShowTokenSwapModal] = useState(false)
+  const [hasRequiredTokens, setHasRequiredTokens] = useState(false)
+  const [tokenPrices, setTokenPrices] = useState<Record<string, TokenPrice>>({})
+  const [loadingPrices, setLoadingPrices] = useState(true)
+
+  // Fetch token prices when component mounts
+  useEffect(() => {
+    const fetchPrices = async () => {
+      if (!selectedPool?.metadata) return
+
+      try {
+        setLoadingPrices(true)
+        const mints = [selectedPool.metadata.baseMint, selectedPool.metadata.quoteMint]
+        const prices = await priceService.getTokenPrices(mints)
+        setTokenPrices(prices)
+      } catch (error) {
+        console.error('Error fetching token prices:', error)
+      } finally {
+        setLoadingPrices(false)
+      }
+    }
+
+    fetchPrices()
+  }, [selectedPool?.metadata])
 
   // Redirect if no pool or template is selected
   if (!selectedPool || !selectedTemplate) {
@@ -141,10 +167,81 @@ export function DeploySection() {
     )
   }
 
+  // Helper function to get token symbol from mint address
+  const getTokenSymbol = (mintAddress: string) => {
+    const tokenMap: Record<string, string> = {
+      'So11111111111111111111111111111111111111112': 'SOL',
+      'mntRT93wUdszL1e9QoLGtWoEfAYzFgofePyT8fTTe7z': 'C98', // Dex V3 C98
+      'mnt3Mc5iK8UNZheyPmS9UQKrM6Rz5s4d8x63BUv22F9': 'USDT', // Dex V3 Tether USD
+    }
+    return tokenMap[mintAddress] || `${mintAddress.slice(0, 4)}...`
+  }
+
+  // Calculate required token amounts based on selected pool and config
+  const getRequiredTokens = () => {
+    if (!selectedPool?.metadata) {
+      return { 
+        tokenXAmount: 0, 
+        tokenYAmount: 0, 
+        tokenXSymbol: 'Unknown', 
+        tokenYSymbol: 'Unknown',
+        tokenXUsdValue: 0,
+        tokenYUsdValue: 0,
+        totalUsdValue: 0,
+        tokenXPrice: null,
+        tokenYPrice: null
+      }
+    }
+
+    const tokenXAmount = (deployConfig.liquidityAmount * deployConfig.tokenXPercentage) / 100
+    const tokenYAmount = (deployConfig.liquidityAmount * (100 - deployConfig.tokenXPercentage)) / 100
+    
+    const tokenXSymbol = getTokenSymbol(selectedPool.metadata.baseMint)
+    const tokenYSymbol = getTokenSymbol(selectedPool.metadata.quoteMint)
+    
+    // Get prices and calculate USD values
+    const tokenXPrice = tokenPrices[selectedPool.metadata.baseMint] || null
+    const tokenYPrice = tokenPrices[selectedPool.metadata.quoteMint] || null
+    
+    const tokenXUsdValue = tokenXPrice ? tokenXAmount * tokenXPrice.price : 0
+    const tokenYUsdValue = tokenYPrice ? tokenYAmount * tokenYPrice.price : 0
+    const totalUsdValue = tokenXUsdValue + tokenYUsdValue
+    
+    return {
+      tokenXAmount,
+      tokenYAmount,
+      tokenXSymbol,
+      tokenYSymbol,
+      tokenXUsdValue,
+      tokenYUsdValue,
+      totalUsdValue,
+      tokenXPrice,
+      tokenYPrice,
+      // Legacy properties for backward compatibility
+      c98Amount: tokenXSymbol === 'C98' ? tokenXAmount : (tokenYSymbol === 'C98' ? tokenYAmount : 0),
+      usdtAmount: tokenXSymbol === 'USDT' ? tokenXAmount : (tokenYSymbol === 'USDT' ? tokenYAmount : 0)
+    }
+  }
+
+  const handleGetTokens = () => {
+    setShowTokenSwapModal(true)
+  }
+
+  const handleSwapComplete = () => {
+    setHasRequiredTokens(true)
+    setShowTokenSwapModal(false)
+  }
+
   const handleDeploy = async () => {
     if (!wallet || !publicKey) {
       console.error('Wallet not connected')
       alert('Please connect your wallet first')
+      return
+    }
+
+    // Check if user has required tokens first
+    if (!hasRequiredTokens) {
+      alert('Please get the required tokens first by clicking "Get Tokens"')
       return
     }
 
@@ -596,15 +693,66 @@ export function DeploySection() {
               </div>
 
               <div className="pt-4 border-t">
+                {/* Token Requirements Alert */}
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-amber-800 font-medium mb-1">
+                        Required Tokens for DLMM Position
+                      </p>
+                      <p className="text-xs text-amber-700 mb-2">
+                        DLMM requires both tokens to provide liquidity. Use the token swap to get the required tokens.
+                      </p>
+                      <div className="space-y-2 text-xs">
+                        {(() => {
+                          const tokens = getRequiredTokens()
+                          return (
+                            <>
+                              <div className="flex items-center space-x-4">
+                                <span>Need: {tokens.tokenXAmount.toFixed(4)} {tokens.tokenXSymbol}</span>
+                                <span>+ {tokens.tokenYAmount.toFixed(4)} {tokens.tokenYSymbol}</span>
+                              </div>
+                              {!loadingPrices && tokens.totalUsdValue > 0 && (
+                                <div className="text-amber-600 space-y-1">
+                                  <div className="flex items-center space-x-4">
+                                    <span>{tokens.tokenXSymbol}: ~${tokens.tokenXUsdValue.toFixed(2)}</span>
+                                    <span>{tokens.tokenYSymbol}: ~${tokens.tokenYUsdValue.toFixed(2)}</span>
+                                  </div>
+                                  <div className="font-medium">
+                                    Total: ~${tokens.totalUsdValue.toFixed(2)} USD
+                                  </div>
+                                </div>
+                              )}
+                              {loadingPrices && (
+                                <div className="text-amber-600">
+                                  Loading prices...
+                                </div>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex gap-3">
                   <Button onClick={() => setCurrentStep('configure')} variant="outline">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Configure
                   </Button>
-                  <Button onClick={handleDeploy} className="flex-1">
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Deploy Strategy (Confirm Transaction)
-                  </Button>
+                  {!hasRequiredTokens ? (
+                    <Button onClick={handleGetTokens} className="flex-1" variant="secondary">
+                      <Play className="w-4 h-4 mr-2" />
+                      Get Required Tokens
+                    </Button>
+                  ) : (
+                    <Button onClick={handleDeploy} className="flex-1">
+                      <Rocket className="w-4 h-4 mr-2" />
+                      Deploy Strategy (Confirm Transaction)
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -648,6 +796,14 @@ export function DeploySection() {
           </CardContent>
         </Card>
       )}
+
+      {/* Token Swap Modal */}
+      <TokenSwapModal
+        isOpen={showTokenSwapModal}
+        onClose={() => setShowTokenSwapModal(false)}
+        requiredTokens={getRequiredTokens()}
+        onSwapComplete={handleSwapComplete}
+      />
     </div>
   )
 }

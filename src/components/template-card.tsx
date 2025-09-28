@@ -52,12 +52,12 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   const handleSimulate = () => {
     selectTemplate(template);
-    setStep('simulator');
+    setStep('simulator'); // Navigate directly to simulator
   };
 
   const handleDeploy = () => {
     selectTemplate(template);
-    setStep('deploy');
+    setStep('deploy'); // Navigate directly to deploy
   };
 
   const handleViewDetails = () => {
@@ -142,23 +142,36 @@ export function TemplateCard({ template }: TemplateCardProps) {
         {/* Actions */}
         <div className="space-y-2 pt-2">
           {isSelected ? (
-            // Show actions for selected template
-            <div className="flex gap-2">
-              <Button onClick={handleSimulate} variant="outline" className="flex-1">
-                📊 Simulate
-              </Button>
-              <Button onClick={handleDeploy} className="flex-1">
-                🚀 Deploy Now
-              </Button>
+            // Show actions for selected template with enhanced UX
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-green-600 font-medium mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Selected - Choose your next action:
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSimulate} variant="outline" className="flex-1 h-10">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Simulate First
+                </Button>
+                <Button onClick={handleDeploy} className="flex-1 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Deploy Now
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground text-center">
+                💡 Simulate to test parameters, or deploy directly to start earning
+              </div>
             </div>
           ) : (
             // Show select button for unselected template
-            <Button onClick={() => selectTemplate(template)} className="w-full">
-              Select Template
+            <Button onClick={() => selectTemplate(template)} className="w-full h-10">
+              <Shield className="w-4 h-4 mr-2" />
+              Select This Strategy
             </Button>
           )}
           <Button variant="ghost" onClick={handleViewDetails} size="sm" className="w-full">
-            View Details
+            <Info className="w-4 h-4 mr-2" />
+            View Technical Details
           </Button>
         </div>
       </CardContent>
