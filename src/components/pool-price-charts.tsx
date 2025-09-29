@@ -1,31 +1,31 @@
-'use client'
+"use client";
 
-import { DLMMPoolChart } from './dlmm-pool-chart'
+import { DLMMPoolChart } from "./dlmm-pool-chart";
 
 interface PoolPriceChartsProps {
-  poolAddress: string
-  baseMint: string
-  quoteMint: string
-  baseSymbol: string
-  quoteSymbol: string
-  className?: string
+  poolAddress: string;
+  baseMint: string;
+  quoteMint: string;
+  baseSymbol: string;
+  quoteSymbol: string;
+  className?: string;
 }
 
-export function PoolPriceCharts({ 
+export function PoolPriceCharts({
   poolAddress,
-  baseMint, 
-  quoteMint, 
-  baseSymbol, 
+  baseMint,
+  quoteMint,
+  baseSymbol,
   quoteSymbol,
-  className = ''
+  className = "",
 }: PoolPriceChartsProps) {
-  const poolSymbol = `${baseSymbol}/${quoteSymbol}`
-  
+  const poolSymbol = `${baseSymbol}/${quoteSymbol}`;
+
   return (
     <DLMMPoolChart
       poolAddress={poolAddress}
       poolSymbol={poolSymbol}
       className={className}
     />
-  )
+  );
 }

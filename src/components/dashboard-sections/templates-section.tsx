@@ -1,49 +1,63 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { STRATEGY_TEMPLATES } from '@/data/strategy-templates'
-import { TemplatesGallery } from '../templates-gallery'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import { Card, CardContent } from '../ui/card'
-import { Badge } from '../ui/badge'
-import { useAppStore } from '@/store/app-store'
-import { BarChart3, Filter, Search, TrendingUp, Trophy, ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react'
+import { useState } from "react";
+import { STRATEGY_TEMPLATES } from "@/data/strategy-templates";
+import { TemplatesGallery } from "../templates-gallery";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Card, CardContent } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { useAppStore } from "@/store/app-store";
+import {
+  BarChart3,
+  Filter,
+  Search,
+  TrendingUp,
+  Trophy,
+  ArrowLeft,
+  CheckCircle,
+  ArrowRight,
+} from "lucide-react";
 
-type FilterType = 'all' | 'Conservative' | 'Balanced' | 'Aggressive'
+type FilterType = "all" | "Conservative" | "Balanced" | "Aggressive";
 
 export function TemplatesSection() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all')
-  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol } = useAppStore()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol } =
+    useAppStore();
 
-  const filteredTemplates = STRATEGY_TEMPLATES.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesFilter = activeFilter === 'all' || template.riskLevel === activeFilter
-    
-    return matchesSearch && matchesFilter
-  })
+  const filteredTemplates = STRATEGY_TEMPLATES.filter((template) => {
+    const matchesSearch =
+      template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      template.tags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+
+    const matchesFilter =
+      activeFilter === "all" || template.riskLevel === activeFilter;
+
+    return matchesSearch && matchesFilter;
+  });
 
   const getFilterStats = (filter: FilterType) => {
-    if (filter === 'all') return STRATEGY_TEMPLATES.length
-    return STRATEGY_TEMPLATES.filter(t => t.riskLevel === filter).length
-  }
+    if (filter === "all") return STRATEGY_TEMPLATES.length;
+    return STRATEGY_TEMPLATES.filter((t) => t.riskLevel === filter).length;
+  };
 
   const getFilterIcon = (filter: FilterType) => {
     switch (filter) {
-      case 'Conservative':
-        return <BarChart3 className="w-4 h-4" />
-      case 'Balanced':
-        return <TrendingUp className="w-4 h-4" />
-      case 'Aggressive':
-        return <Trophy className="w-4 h-4" />
+      case "Conservative":
+        return <BarChart3 className="w-4 h-4" />;
+      case "Balanced":
+        return <TrendingUp className="w-4 h-4" />;
+      case "Aggressive":
+        return <Trophy className="w-4 h-4" />;
       default:
-        return <Filter className="w-4 h-4" />
+        return <Filter className="w-4 h-4" />;
     }
-  }
+  };
 
   // Redirect if no pool is selected
   if (!selectedPool) {
@@ -53,15 +67,16 @@ export function TemplatesSection() {
           <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <h2 className="text-lg font-semibold mb-2">No Pool Selected</h2>
           <p className="max-w-md">
-            Please select a pool first to see strategies optimized for that specific pool.
+            Please select a pool first to see strategies optimized for that
+            specific pool.
           </p>
         </div>
-        <Button onClick={() => setStep('pools')} variant="outline">
+        <Button onClick={() => setStep("pools")} variant="outline">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Go Back to Pool Selection
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -75,11 +90,15 @@ export function TemplatesSection() {
                 <CheckCircle className="w-4 h-4 text-white" />
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Selected Pool</div>
-                <div className="font-semibold text-lg">{getTokenPairSymbol()}</div>
+                <div className="text-sm text-muted-foreground">
+                  Selected Pool
+                </div>
+                <div className="font-semibold text-lg">
+                  {getTokenPairSymbol()}
+                </div>
               </div>
             </div>
-            <Button onClick={() => setStep('pools')} variant="ghost" size="sm">
+            <Button onClick={() => setStep("pools")} variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Change Pool
             </Button>
@@ -88,9 +107,12 @@ export function TemplatesSection() {
       </Card>
 
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">Step 2: Choose Strategy</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Step 2: Choose Strategy
+        </h1>
         <p className="text-muted-foreground">
-          Select a strategy template optimized for {getTokenPairSymbol()}. These templates are created by expert traders and the community.
+          Select a strategy template optimized for {getTokenPairSymbol()}. These
+          templates are created by expert traders and the community.
         </p>
       </div>
 
@@ -101,47 +123,55 @@ export function TemplatesSection() {
           <Input
             placeholder="Search templates by name, description, or tags..."
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(e.target.value)
+            }
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex gap-2 flex-wrap">
           <Button
-            variant={activeFilter === 'all' ? 'default' : 'outline'}
+            variant={activeFilter === "all" ? "default" : "outline"}
             size="sm"
-            onClick={() => setActiveFilter('all')}
+            onClick={() => setActiveFilter("all")}
             className="h-8"
           >
             <Filter className="w-4 h-4 mr-1" />
-            All Templates ({getFilterStats('all')})
+            All Templates ({getFilterStats("all")})
           </Button>
           <Button
-            variant={activeFilter === 'Conservative' ? 'default' : 'outline'}
+            variant={activeFilter === "Conservative" ? "default" : "outline"}
             size="sm"
-            onClick={() => setActiveFilter('Conservative')}
+            onClick={() => setActiveFilter("Conservative")}
             className="h-8"
           >
-            {getFilterIcon('Conservative')}
-            <span className="ml-1">Conservative ({getFilterStats('Conservative')})</span>
+            {getFilterIcon("Conservative")}
+            <span className="ml-1">
+              Conservative ({getFilterStats("Conservative")})
+            </span>
           </Button>
           <Button
-            variant={activeFilter === 'Balanced' ? 'default' : 'outline'}
+            variant={activeFilter === "Balanced" ? "default" : "outline"}
             size="sm"
-            onClick={() => setActiveFilter('Balanced')}
+            onClick={() => setActiveFilter("Balanced")}
             className="h-8"
           >
-            {getFilterIcon('Balanced')}
-            <span className="ml-1">Balanced ({getFilterStats('Balanced')})</span>
+            {getFilterIcon("Balanced")}
+            <span className="ml-1">
+              Balanced ({getFilterStats("Balanced")})
+            </span>
           </Button>
           <Button
-            variant={activeFilter === 'Aggressive' ? 'default' : 'outline'}
+            variant={activeFilter === "Aggressive" ? "default" : "outline"}
             size="sm"
-            onClick={() => setActiveFilter('Aggressive')}
+            onClick={() => setActiveFilter("Aggressive")}
             className="h-8"
           >
-            {getFilterIcon('Aggressive')}
-            <span className="ml-1">Aggressive ({getFilterStats('Aggressive')})</span>
+            {getFilterIcon("Aggressive")}
+            <span className="ml-1">
+              Aggressive ({getFilterStats("Aggressive")})
+            </span>
           </Button>
         </div>
       </div>
@@ -149,13 +179,14 @@ export function TemplatesSection() {
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {filteredTemplates.length} of {STRATEGY_TEMPLATES.length} templates
+          Showing {filteredTemplates.length} of {STRATEGY_TEMPLATES.length}{" "}
+          templates
         </div>
         {searchTerm && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setSearchTerm('')}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSearchTerm("")}
             className="h-auto p-1 text-xs"
           >
             Clear search
@@ -177,13 +208,15 @@ export function TemplatesSection() {
                 <div>
                   <h3 className="text-lg font-semibold">Strategy Selected</h3>
                   <p className="text-sm text-muted-foreground">
-                    <strong>{selectedTemplate.name}</strong> • {selectedTemplate.riskLevel} Risk • Est. APR: {selectedTemplate.estimatedAPR}%
+                    <strong>{selectedTemplate.name}</strong> •{" "}
+                    {selectedTemplate.riskLevel} Risk • Est. APR:{" "}
+                    {selectedTemplate.estimatedAPR}%
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={() => setStep('simulator')}
+                  onClick={() => setStep("simulator")}
                   variant="outline"
                   className="gap-2"
                 >
@@ -191,7 +224,7 @@ export function TemplatesSection() {
                   Test in Simulator
                 </Button>
                 <Button
-                  onClick={() => setStep('deploy')}
+                  onClick={() => setStep("deploy")}
                   size="lg"
                   className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
@@ -204,5 +237,5 @@ export function TemplatesSection() {
         </Card>
       )}
     </div>
-  )
+  );
 }

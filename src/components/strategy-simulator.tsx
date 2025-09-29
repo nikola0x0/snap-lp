@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { BinChart } from "./bin-chart";
-import { DLMMService } from "@/services/dlmm";
+import { realDlmmService } from "@/services/dlmm-real";
 import { X, Play, Loader2, AlertCircle } from "lucide-react";
 
 interface StrategySimulatorProps {
@@ -23,7 +23,7 @@ export function StrategySimulator({
   const [poolData, setPoolData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Simulation state
   const [currentPrice, setCurrentPrice] = useState(100);
   const [selectedPrice, setSelectedPrice] = useState([100]);
@@ -34,29 +34,32 @@ export function StrategySimulator({
     const loadPoolData = async () => {
       try {
         setLoading(true);
-        const dlmm = new DLMMService();
-        const pools = await dlmm.getPools();
-        
+        // Use the real DLMM service singleton
+        const poolsResult = await realDlmmService.getPools();
+        const pools = poolsResult.pools;
+
         // Use the first active pool with reserves
-        const activePool = pools.find(pool => 
-          pool.metadata?.baseReserve !== "0" && pool.metadata?.quoteReserve !== "0"
+        const activePool = pools.find(
+          (pool) =>
+            pool.metadata?.baseReserve !== "0" &&
+            pool.metadata?.quoteReserve !== "0",
         );
-        
+
         if (activePool?.metadata) {
           setPoolData(activePool);
           // Calculate current price from reserves (simplified)
           const baseReserve = parseFloat(activePool.metadata.baseReserve);
           const quoteReserve = parseFloat(activePool.metadata.quoteReserve);
           const price = quoteReserve / baseReserve;
-          
+
           setCurrentPrice(price);
           setSelectedPrice([price]);
         }
-        
+
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load pool data:', err);
-        setError('Failed to load pool data');
+        console.error("Failed to load pool data:", err);
+        setError("Failed to load pool data");
         setLoading(false);
         // Fallback to mock data
         setCurrentPrice(100);
@@ -71,7 +74,7 @@ export function StrategySimulator({
   const calculateBins = () => {
     const binDistribution = template.binConfiguration.binDistribution;
     const centerPrice = currentPrice;
-    
+
     if (!binDistribution || binDistribution.length === 0) {
       // Fallback to old calculation if no binDistribution
       const rangeWidth = template.binConfiguration.rangeWidth;
@@ -84,28 +87,34 @@ export function StrategySimulator({
       return Array.from({ length: binCount }, (_, i) => ({
         id: i,
         price: minPrice + i * priceStep,
-        liquidity: template.binConfiguration.distribution === "concentrated"
-          ? Math.max(0, 100 - Math.abs(i - binCount / 2) * 20)
-          : 100 / binCount,
-        active: selectedPrice[0] >= minPrice + i * priceStep &&
-               selectedPrice[0] < minPrice + (i + 1) * priceStep,
+        liquidity:
+          template.binConfiguration.distribution === "concentrated"
+            ? Math.max(0, 100 - Math.abs(i - binCount / 2) * 20)
+            : 100 / binCount,
+        active:
+          selectedPrice[0] >= minPrice + i * priceStep &&
+          selectedPrice[0] < minPrice + (i + 1) * priceStep,
       }));
     }
 
     // Use actual bin distribution from template
-    const binRange = Math.max(...binDistribution.map(b => Math.abs(b.binId))) * 2 + 1;
-    const priceRange = centerPrice * (template.binConfiguration.rangeWidth / 100);
+    const binRange =
+      Math.max(...binDistribution.map((b) => Math.abs(b.binId))) * 2 + 1;
+    const priceRange =
+      centerPrice * (template.binConfiguration.rangeWidth / 100);
     const priceStep = priceRange / binRange;
-    
-    return binDistribution.map((bin) => {
-      const adjustedPrice = centerPrice + (bin.binId * priceStep);
-      return {
-        id: bin.binId,
-        price: adjustedPrice,
-        liquidity: bin.weight * 100, // Scale weight to percentage for visualization
-        active: Math.abs(selectedPrice[0] - adjustedPrice) < priceStep / 2,
-      };
-    }).sort((a, b) => a.price - b.price);
+
+    return binDistribution
+      .map((bin) => {
+        const adjustedPrice = centerPrice + bin.binId * priceStep;
+        return {
+          id: bin.binId,
+          price: adjustedPrice,
+          liquidity: bin.weight * 100, // Scale weight to percentage for visualization
+          active: Math.abs(selectedPrice[0] - adjustedPrice) < priceStep / 2,
+        };
+      })
+      .sort((a, b) => a.price - b.price);
   };
 
   // Calculate estimated metrics
@@ -120,7 +129,7 @@ export function StrategySimulator({
         0,
         (Math.abs(selectedPrice[0] - currentPrice) / currentPrice) *
           template.impermanentLossRisk *
-          10
+          10,
       ),
       feesEstimate:
         liquidityAmount[0] * (template.estimatedAPR / 100) * utilizationRate,
@@ -138,7 +147,9 @@ export function StrategySimulator({
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Loader2 className="w-8 h-8 animate-spin mb-4" />
-            <p className="text-sm text-muted-foreground">Loading real pool data...</p>
+            <p className="text-sm text-muted-foreground">
+              Loading real pool data...
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -189,13 +200,13 @@ export function StrategySimulator({
               htmlFor="price-slider"
               className="text-sm font-medium mb-2 block"
             >
-              Simulated Price: {selectedPrice[0] < 1 
-                ? selectedPrice[0].toFixed(6) 
-                : selectedPrice[0].toFixed(2)
-              } {poolData?.metadata ? 
-                `(${poolData.metadata.quoteMint.slice(0, 4)}.../${poolData.metadata.baseMint.slice(0, 4)}...)` 
-                : '$'
-              }
+              Simulated Price:{" "}
+              {selectedPrice[0] < 1
+                ? selectedPrice[0].toFixed(6)
+                : selectedPrice[0].toFixed(2)}{" "}
+              {poolData?.metadata
+                ? `(${poolData.metadata.quoteMint.slice(0, 4)}.../${poolData.metadata.baseMint.slice(0, 4)}...)`
+                : "$"}
             </label>
             <Slider
               id="price-slider"
@@ -207,9 +218,18 @@ export function StrategySimulator({
               className="mb-2"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{(currentPrice * 0.5).toFixed(currentPrice < 1 ? 6 : 2)}</span>
-              <span>Market: {currentPrice < 1 ? currentPrice.toFixed(6) : currentPrice.toFixed(2)}</span>
-              <span>{(currentPrice * 1.5).toFixed(currentPrice < 1 ? 6 : 2)}</span>
+              <span>
+                {(currentPrice * 0.5).toFixed(currentPrice < 1 ? 6 : 2)}
+              </span>
+              <span>
+                Market:{" "}
+                {currentPrice < 1
+                  ? currentPrice.toFixed(6)
+                  : currentPrice.toFixed(2)}
+              </span>
+              <span>
+                {(currentPrice * 1.5).toFixed(currentPrice < 1 ? 6 : 2)}
+              </span>
             </div>
           </div>
 

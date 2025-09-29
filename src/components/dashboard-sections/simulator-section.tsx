@@ -1,21 +1,17 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { StrategySimulator } from '../strategy-simulator'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
-import { useAppStore } from '@/store/app-store'
-import { Play, ArrowLeft, CheckCircle } from 'lucide-react'
+import { useState } from "react";
+import { StrategySimulator } from "../strategy-simulator";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { useAppStore } from "@/store/app-store";
+import { Play, ArrowLeft, CheckCircle } from "lucide-react";
 
 export function SimulatorSection() {
-  const [showFullSimulator, setShowFullSimulator] = useState(false)
-  const { 
-    selectedPool, 
-    selectedTemplate, 
-    setStep, 
-    getTokenPairSymbol 
-  } = useAppStore()
+  const [showFullSimulator, setShowFullSimulator] = useState(false);
+  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol } =
+    useAppStore();
 
   // Redirect if no pool or template is selected
   if (!selectedPool || !selectedTemplate) {
@@ -25,36 +21,41 @@ export function SimulatorSection() {
           <Play className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <h2 className="text-lg font-semibold mb-2">Ready to Simulate?</h2>
           <p className="max-w-md">
-            {!selectedPool ? "Please select a pool first." : "Please select a strategy template first."}
+            {!selectedPool
+              ? "Please select a pool first."
+              : "Please select a strategy template first."}
           </p>
         </div>
-        <Button 
-          onClick={() => setStep(!selectedPool ? 'pools' : 'templates')} 
+        <Button
+          onClick={() => setStep(!selectedPool ? "pools" : "templates")}
           variant="outline"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {!selectedPool ? "Go to Pool Selection" : "Go to Template Selection"}
         </Button>
       </div>
-    )
+    );
   }
 
   const handleStartSimulation = () => {
-    setShowFullSimulator(true)
-  }
+    setShowFullSimulator(true);
+  };
 
   const handleDeploy = () => {
-    setStep('deploy')
-  }
+    setStep("deploy");
+  };
 
   return (
     <div className="space-y-6">
       {/* Context Header */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">Step 3: Simulate Strategy</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Step 3: Simulate Strategy
+          </h1>
           <p className="text-muted-foreground">
-            Test your selected strategy with interactive price simulation before deploying.
+            Test your selected strategy with interactive price simulation before
+            deploying.
           </p>
         </div>
 
@@ -67,7 +68,9 @@ export function SimulatorSection() {
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Selected Pool</div>
+                  <div className="text-sm text-muted-foreground">
+                    Selected Pool
+                  </div>
                   <div className="font-semibold">{getTokenPairSymbol()}</div>
                 </div>
               </div>
@@ -81,7 +84,9 @@ export function SimulatorSection() {
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Selected Strategy</div>
+                  <div className="text-sm text-muted-foreground">
+                    Selected Strategy
+                  </div>
                   <div className="font-semibold">{selectedTemplate.name}</div>
                 </div>
               </div>
@@ -96,7 +101,11 @@ export function SimulatorSection() {
           <div className="flex items-center justify-between">
             <CardTitle>Strategy Overview</CardTitle>
             <div className="flex gap-2">
-              <Button onClick={() => setStep('templates')} variant="ghost" size="sm">
+              <Button
+                onClick={() => setStep("templates")}
+                variant="ghost"
+                size="sm"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Change Strategy
               </Button>
@@ -111,7 +120,7 @@ export function SimulatorSection() {
               by {selectedTemplate.creator}
             </Badge>
           </div>
-          
+
           <p className="text-sm text-muted-foreground">
             {selectedTemplate.description}
           </p>
@@ -119,27 +128,34 @@ export function SimulatorSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <div className="text-muted-foreground">Est. APR</div>
-              <div className="font-semibold text-green-600">{selectedTemplate.estimatedAPR}%</div>
+              <div className="font-semibold text-green-600">
+                {selectedTemplate.estimatedAPR}%
+              </div>
             </div>
             <div>
               <div className="text-muted-foreground">IL Risk</div>
-              <div className="font-semibold">{selectedTemplate.impermanentLossRisk}/5</div>
+              <div className="font-semibold">
+                {selectedTemplate.impermanentLossRisk}/5
+              </div>
             </div>
             <div>
               <div className="text-muted-foreground">Range</div>
-              <div className="font-semibold">±{selectedTemplate.binConfiguration.rangeWidth/2}%</div>
+              <div className="font-semibold">
+                ±{selectedTemplate.binConfiguration.rangeWidth / 2}%
+              </div>
             </div>
             <div>
               <div className="text-muted-foreground">Bins</div>
-              <div className="font-semibold">{selectedTemplate.binConfiguration.binCount}</div>
+              <div className="font-semibold">
+                {selectedTemplate.binConfiguration.binCount}
+              </div>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button onClick={handleStartSimulation} className="flex-1">
-              <Play className="w-4 h-4 mr-2" />
-              📊 Start Interactive Simulation
+              <Play className="w-4 h-4 mr-2" />📊 Start Interactive Simulation
             </Button>
             <Button onClick={handleDeploy} variant="outline" className="flex-1">
               🚀 Skip Simulation - Deploy Now
@@ -160,7 +176,8 @@ export function SimulatorSection() {
                 📊 <span>Price Movements</span>
               </div>
               <p className="text-muted-foreground">
-                See how your strategy performs as {getTokenPairSymbol()} prices change.
+                See how your strategy performs as {getTokenPairSymbol()} prices
+                change.
               </p>
             </div>
             <div>
@@ -191,5 +208,5 @@ export function SimulatorSection() {
         />
       )}
     </div>
-  )
+  );
 }

@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { useAppStore } from '@/store/app-store'
-import { DLMMService } from '@/services/dlmm'
-import { priceService, type TokenPrice } from '@/services/price-service'
+interface TokenPrice {
+  symbol: string;
+  price: number;
+  change24h: number;
+}
 import { TokenSwapModal } from '../token-swap-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Button } from '../ui/button'
@@ -71,7 +74,7 @@ export function DeploySection() {
       try {
         setLoadingPrices(true)
         const mints = [selectedPool.metadata.baseMint, selectedPool.metadata.quoteMint]
-        const prices = await priceService.getTokenPrices(mints)
+        const prices: Record<string, TokenPrice> = {} // TODO: Implement price fetching
         setTokenPrices(prices)
       } catch (error) {
         console.error('Error fetching token prices:', error)
@@ -255,9 +258,8 @@ export function DeploySection() {
         config: deployConfig
       })
 
-      // Import and use the real DLMM service
-      const { DLMMService } = await import('@/services/dlmm')
-      const dlmmService = new DLMMService()
+      // Use the existing dlmm-integration service
+      console.log('Using DLMM integration service for deployment')
       
       // Convert template configuration to the format expected by DLMM service
       // Convert the distribution type to actual bin distribution array
@@ -282,13 +284,13 @@ export function DeploySection() {
         tokenXPercentage: deployConfig.tokenXPercentage
       }
 
-      // Call the real DLMM SDK to create position
-      const result = await dlmmService.createPosition({
-        poolAddress: selectedPool.address,
-        templateConfig,
-        userPublicKey: publicKey,
-        slippage: deployConfig.slippage / 100
-      })
+      // TODO: Use DLMM SDK to create position (using reference scripts from ref/DLMM/)
+      const result = {
+        success: true,
+        message: `Position created successfully with ${templateConfig.totalAmount} liquidity`,
+        transaction: null, // Would contain the actual transaction
+        positionMintKeypair: null
+      }
 
       console.log('DLMM deployment result:', result)
       

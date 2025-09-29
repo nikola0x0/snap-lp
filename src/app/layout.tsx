@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SnapLP - DLMM Strategy Templates",
-  description: "Simplified DLMM liquidity provision with pre-configured strategy templates",
+  description:
+    "Simplified DLMM liquidity provision with pre-configured strategy templates",
 };
 
 export default function RootLayout({
@@ -31,9 +32,7 @@ export default function RootLayout({
       >
         <WalletContextProvider>
           <Header />
-          <main className="flex-1 overflow-hidden">
-            {children}
-          </main>
+          <main className="flex-1 overflow-hidden">{children}</main>
         </WalletContextProvider>
       </body>
     </html>

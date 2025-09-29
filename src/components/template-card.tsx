@@ -6,21 +6,29 @@ import { useAppStore } from "@/store/app-store";
 // Risk level styling utilities
 const getRiskLevelColor = (riskLevel: string) => {
   switch (riskLevel) {
-    case 'Conservative': return 'text-green-700'
-    case 'Balanced': return 'text-yellow-700'
-    case 'Aggressive': return 'text-red-700'
-    default: return 'text-gray-700'
+    case "Conservative":
+      return "text-green-700";
+    case "Balanced":
+      return "text-yellow-700";
+    case "Aggressive":
+      return "text-red-700";
+    default:
+      return "text-gray-700";
   }
-}
+};
 
 const getRiskLevelBgColor = (riskLevel: string) => {
   switch (riskLevel) {
-    case 'Conservative': return 'bg-green-100'
-    case 'Balanced': return 'bg-yellow-100'
-    case 'Aggressive': return 'bg-red-100'
-    default: return 'bg-gray-100'
+    case "Conservative":
+      return "bg-green-100";
+    case "Balanced":
+      return "bg-yellow-100";
+    case "Aggressive":
+      return "bg-red-100";
+    default:
+      return "bg-gray-100";
   }
-}
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,12 +60,12 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   const handleSimulate = () => {
     selectTemplate(template);
-    setStep('simulator'); // Navigate directly to simulator
+    setStep("simulator"); // Navigate directly to simulator
   };
 
   const handleDeploy = () => {
     selectTemplate(template);
-    setStep('deploy'); // Navigate directly to deploy
+    setStep("deploy"); // Navigate directly to deploy
   };
 
   const handleViewDetails = () => {
@@ -67,9 +75,11 @@ export function TemplateCard({ template }: TemplateCardProps) {
   const isSelected = selectedTemplate?.id === template.id;
 
   return (
-    <Card className={`hover:shadow-md transition-all border-2 ${
-      isSelected ? 'border-primary bg-primary/5' : 'border-transparent'
-    }`}>
+    <Card
+      className={`hover:shadow-md transition-all border-2 ${
+        isSelected ? "border-primary bg-primary/5" : "border-transparent"
+      }`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
@@ -78,7 +88,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
               <Badge
                 variant="secondary"
                 className={`${getRiskLevelBgColor(
-                  template.riskLevel
+                  template.riskLevel,
                 )} ${getRiskLevelColor(template.riskLevel)} border-0`}
               >
                 {getRiskIcon(template.riskLevel)}
@@ -149,27 +159,43 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 Selected - Choose your next action:
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleSimulate} variant="outline" className="flex-1 h-10">
+                <Button
+                  onClick={handleSimulate}
+                  variant="outline"
+                  className="flex-1 h-10"
+                >
                   <TrendingUp className="w-4 h-4 mr-2" />
                   Simulate First
                 </Button>
-                <Button onClick={handleDeploy} className="flex-1 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Button
+                  onClick={handleDeploy}
+                  className="flex-1 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
                   <Zap className="w-4 h-4 mr-2" />
                   Deploy Now
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground text-center">
-                💡 Simulate to test parameters, or deploy directly to start earning
+                💡 Simulate to test parameters, or deploy directly to start
+                earning
               </div>
             </div>
           ) : (
             // Show select button for unselected template
-            <Button onClick={() => selectTemplate(template)} className="w-full h-10">
+            <Button
+              onClick={() => selectTemplate(template)}
+              className="w-full h-10"
+            >
               <Shield className="w-4 h-4 mr-2" />
               Select This Strategy
             </Button>
           )}
-          <Button variant="ghost" onClick={handleViewDetails} size="sm" className="w-full">
+          <Button
+            variant="ghost"
+            onClick={handleViewDetails}
+            size="sm"
+            className="w-full"
+          >
             <Info className="w-4 h-4 mr-2" />
             View Technical Details
           </Button>

@@ -1,131 +1,127 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, TrendingUp, TrendingDown } from 'lucide-react'
-import { priceService, type TokenPriceHistory } from '@/services/price-service'
+import { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
+import { realDlmmService } from "@/services/dlmm-real";
 
-interface PriceChartProps {
-  mint: string
-  symbol: string
-  className?: string
-  height?: number
+interface PricePoint {
+  time: string;
+  price: number;
+  volume: number;
+  activeBin: number;
 }
 
-type TimeRange = '1d' | '7d' | '30d'
+interface PriceChartProps {
+  poolAddress: string;
+  symbol: string;
+  className?: string;
+}
 
-export function PriceChart({ mint, symbol, className = '', height = 300 }: PriceChartProps) {
-  const [priceHistory, setPriceHistory] = useState<TokenPriceHistory | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [timeRange, setTimeRange] = useState<TimeRange>('7d')
+type TimeRange = "1d" | "7d" | "30d";
+
+export function PriceChart({ poolAddress, symbol, className }: PriceChartProps) {
+  const [priceData, setPriceData] = useState<PricePoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [priceChange, setPriceChange] = useState<number>(0);
 
   const timeRangeMap = {
-    '1d': 1,
-    '7d': 7,
-    '30d': 30
-  }
+    "1d": 1,
+    "7d": 7,
+    "30d": 30,
+  };
 
   useEffect(() => {
-    const fetchPriceHistory = async () => {
+    const fetchPriceData = async () => {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
+
+        const days = timeRangeMap[timeRange];
         
-        const days = timeRangeMap[timeRange]
-        const history = await priceService.getTokenPriceHistory(mint, days)
+        // Get price history from DLMM service
+        const priceHistory = await realDlmmService.getPoolPriceData(poolAddress, days);
         
-        if (history) {
-          setPriceHistory(history)
+        if (priceHistory && priceHistory.length > 0) {
+          setPriceData(priceHistory);
+          
+          // Calculate current price and change
+          const latest = priceHistory[priceHistory.length - 1];
+          const earliest = priceHistory[0];
+          
+          setCurrentPrice(latest?.price || 0);
+          
+          if (earliest && latest) {
+            const change = ((latest.price - earliest.price) / earliest.price) * 100;
+            setPriceChange(change);
+          }
         } else {
-          setError('Price history not available')
+          setError("No price data available");
         }
       } catch (err) {
-        console.error('Error fetching price history:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load price history')
+        console.error("Error fetching price data:", err);
+        setError("Failed to load price data");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchPriceHistory()
-  }, [mint, timeRange])
+    if (poolAddress) {
+      fetchPriceData();
+    }
+  }, [poolAddress, timeRange]);
 
   const formatPrice = (price: number) => {
-    if (price >= 1) {
-      return `$${price.toFixed(2)}`
-    } else if (price >= 0.01) {
-      return `$${price.toFixed(4)}`
-    } else {
-      return `$${price.toFixed(6)}`
-    }
-  }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6,
+    }).format(price);
+  };
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp)
-    if (timeRange === '1d') {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    }
-  }
-
-  const chartData = priceHistory?.prices.map(point => ({
-    timestamp: point.timestamp,
-    price: point.price,
-    formattedTime: formatTimestamp(point.timestamp)
-  })) || []
-
-  const isPositiveChange = (priceHistory?.priceChange24h || 0) >= 0
+  const formatPercentage = (percentage: number) => {
+    return `${percentage >= 0 ? "+" : ""}${percentage.toFixed(2)}%`;
+  };
 
   if (loading) {
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {symbol} Price
-            <Loader2 className="w-4 h-4 animate-spin" />
-          </CardTitle>
+          <CardTitle>{symbol} Price</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center" style={{ height }}>
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Loading price data...</p>
-            </div>
-          </div>
+        <CardContent className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (error || !priceHistory) {
+  if (error) {
     return (
       <Card className={className}>
         <CardHeader>
           <CardTitle>{symbol} Price</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center" style={{ height }}>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                {error || 'Price data not available'}
-              </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.location.reload()}
-              >
-                Try Again
-              </Button>
-            </div>
-          </div>
+        <CardContent className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">{error}</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -135,28 +131,28 @@ export function PriceChart({ mint, symbol, className = '', height = 300 }: Price
           <div>
             <CardTitle className="flex items-center gap-2">
               {symbol} Price
-              <Badge variant={isPositiveChange ? "default" : "destructive"} className="gap-1">
-                {isPositiveChange ? (
-                  <TrendingUp className="w-3 h-3" />
+              <Badge variant={priceChange >= 0 ? "secondary" : "destructive"}>
+                {priceChange >= 0 ? (
+                  <TrendingUp className="h-3 w-3 mr-1" />
                 ) : (
-                  <TrendingDown className="w-3 h-3" />
+                  <TrendingDown className="h-3 w-3 mr-1" />
                 )}
-                {isPositiveChange ? '+' : ''}{priceHistory.priceChange24h.toFixed(2)}%
+                {formatPercentage(priceChange)}
               </Badge>
             </CardTitle>
-            <div className="text-2xl font-bold">
-              {formatPrice(priceHistory.currentPrice)}
-            </div>
+            {currentPrice && (
+              <p className="text-2xl font-bold mt-1">
+                {formatPrice(currentPrice)}
+              </p>
+            )}
           </div>
-          
           <div className="flex gap-1">
-            {(['1d', '7d', '30d'] as TimeRange[]).map(range => (
+            {(["1d", "7d", "30d"] as TimeRange[]).map((range) => (
               <Button
                 key={range}
-                variant={timeRange === range ? 'default' : 'outline'}
+                variant={timeRange === range ? "default" : "outline"}
                 size="sm"
                 onClick={() => setTimeRange(range)}
-                className="h-7 px-3 text-xs"
               >
                 {range}
               </Button>
@@ -164,56 +160,44 @@ export function PriceChart({ mint, symbol, className = '', height = 300 }: Price
           </div>
         </div>
       </CardHeader>
-      
       <CardContent>
-        <div style={{ height }}>
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="formattedTime"
+            <LineChart data={priceData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="time"
                 tick={{ fontSize: 12 }}
-                tickLine={false}
                 axisLine={false}
+                tickLine={false}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 12 }}
-                tickLine={false}
                 axisLine={false}
+                tickLine={false}
                 tickFormatter={formatPrice}
-                domain={['dataMin * 0.98', 'dataMax * 1.02']}
               />
               <Tooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload
-                    return (
-                      <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                        <p className="text-sm font-medium">{label}</p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground">Price: </span>
-                          <span className="font-semibold">
-                            {formatPrice(data.price)}
-                          </span>
-                        </p>
-                      </div>
-                    )
-                  }
-                  return null
+                labelFormatter={(label) => `Time: ${label}`}
+                formatter={(value: number) => [formatPrice(value), "Price"]}
+                contentStyle={{
+                  backgroundColor: "hsl(var(--background))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: "6px",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke={isPositiveChange ? "#22c55e" : "#ef4444"}
+                stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: isPositiveChange ? "#22c55e" : "#ef4444" }}
+                activeDot={{ r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

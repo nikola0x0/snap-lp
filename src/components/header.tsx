@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { WalletConnection } from './wallet-connection'
-import { Button } from './ui/button'
-import { Menu } from 'lucide-react'
+import { useState } from "react";
+import { WalletConnection } from "./wallet-connection";
+import { Button } from "./ui/button";
+import { Menu } from "lucide-react";
 
 interface HeaderProps {
-  onMobileMenuToggle?: () => void
+  onMobileMenuToggle?: () => void;
 }
 
 export function Header({ onMobileMenuToggle }: HeaderProps) {
@@ -25,7 +25,7 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
               <Menu className="w-5 h-5" />
             </Button>
           )}
-          
+
           <div>
             <h1 className="text-xl font-bold">SnapLP</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -33,7 +33,7 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -43,5 +43,5 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

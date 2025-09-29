@@ -1,17 +1,25 @@
-'use client'
+"use client";
 
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  ReferenceLine,
+  Cell,
+} from "recharts";
 
 interface Bin {
-  id: number
-  price: number
-  liquidity: number
-  active: boolean
+  id: number;
+  price: number;
+  liquidity: number;
+  active: boolean;
 }
 
 interface BinChartProps {
-  bins: Bin[]
-  currentPrice: number
+  bins: Bin[];
+  currentPrice: number;
 }
 
 export function BinChart({ bins, currentPrice }: BinChartProps) {
@@ -20,32 +28,35 @@ export function BinChart({ bins, currentPrice }: BinChartProps) {
     price: bin.price.toFixed(1),
     liquidity: bin.liquidity,
     active: bin.active,
-  }))
+  }));
 
   return (
     <div className="w-full h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-          <XAxis 
-            dataKey="price" 
+        <BarChart
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+        >
+          <XAxis
+            dataKey="price"
             tick={{ fontSize: 10 }}
             interval={Math.floor(bins.length / 6)}
           />
-          <YAxis 
+          <YAxis
             tick={{ fontSize: 10 }}
-            label={{ value: 'Liquidity', angle: -90, position: 'insideLeft' }}
+            label={{ value: "Liquidity", angle: -90, position: "insideLeft" }}
           />
-          <ReferenceLine 
-            x={currentPrice.toFixed(1)} 
-            stroke="#ef4444" 
+          <ReferenceLine
+            x={currentPrice.toFixed(1)}
+            stroke="#ef4444"
             strokeWidth={2}
             strokeDasharray="4 4"
           />
           <Bar dataKey="liquidity" radius={[2, 2, 0, 0]}>
             {chartData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={entry.active ? "#22c55e" : "#94a3b8"} 
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.active ? "#22c55e" : "#94a3b8"}
               />
             ))}
           </Bar>
@@ -66,5 +77,5 @@ export function BinChart({ bins, currentPrice }: BinChartProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

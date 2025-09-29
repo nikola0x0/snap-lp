@@ -1,37 +1,45 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { StrategyTemplate } from '@/types/strategy'
+import { useState } from "react";
+import { StrategyTemplate } from "@/types/strategy";
 // Risk level styling utilities
 const getRiskLevelColor = (riskLevel: string) => {
   switch (riskLevel) {
-    case 'Conservative': return 'text-green-700'
-    case 'Balanced': return 'text-yellow-700'
-    case 'Aggressive': return 'text-red-700'
-    default: return 'text-gray-700'
+    case "Conservative":
+      return "text-green-700";
+    case "Balanced":
+      return "text-yellow-700";
+    case "Aggressive":
+      return "text-red-700";
+    default:
+      return "text-gray-700";
   }
-}
+};
 
 const getRiskLevelBgColor = (riskLevel: string) => {
   switch (riskLevel) {
-    case 'Conservative': return 'bg-green-100'
-    case 'Balanced': return 'bg-yellow-100'
-    case 'Aggressive': return 'bg-red-100'
-    default: return 'bg-gray-100'
+    case "Conservative":
+      return "bg-green-100";
+    case "Balanced":
+      return "bg-yellow-100";
+    case "Aggressive":
+      return "bg-red-100";
+    default:
+      return "bg-gray-100";
   }
-}
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { Button } from './ui/button'
-import { BinChart } from './bin-chart'
-import { StrategySimulator } from './strategy-simulator'
+};
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { BinChart } from "./bin-chart";
+import { StrategySimulator } from "./strategy-simulator";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from './ui/dialog'
+} from "./ui/dialog";
 import {
   Shield,
   TrendingUp,
@@ -44,89 +52,101 @@ import {
   BarChart3,
   Calculator,
   X,
-  Play
-} from 'lucide-react'
+  Play,
+} from "lucide-react";
 
 interface TemplateDetailModalProps {
-  template: StrategyTemplate
-  isOpen: boolean
-  onClose: () => void
+  template: StrategyTemplate;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetailModalProps) {
-  const [showSimulator, setShowSimulator] = useState(false)
+export function TemplateDetailModal({
+  template,
+  isOpen,
+  onClose,
+}: TemplateDetailModalProps) {
+  const [showSimulator, setShowSimulator] = useState(false);
 
   const getRiskIcon = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'Conservative':
-        return <Shield className="w-4 h-4" />
-      case 'Balanced':
-        return <TrendingUp className="w-4 h-4" />
-      case 'Aggressive':
-        return <Zap className="w-4 h-4" />
+      case "Conservative":
+        return <Shield className="w-4 h-4" />;
+      case "Balanced":
+        return <TrendingUp className="w-4 h-4" />;
+      case "Aggressive":
+        return <Zap className="w-4 h-4" />;
       default:
-        return <Info className="w-4 h-4" />
+        return <Info className="w-4 h-4" />;
     }
-  }
+  };
 
   const getRiskDescription = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'Conservative':
-        return 'Minimal exposure to impermanent loss with steady fee collection. Ideal for stable pairs and risk-averse investors.'
-      case 'Balanced':
-        return 'Moderate risk exposure balanced with higher yield potential. Good for most trading pairs with regular activity.'
-      case 'Aggressive':
-        return 'Higher risk exposure targeting maximum yield from volatile pairs. Suitable for experienced LPs comfortable with IL risk.'
+      case "Conservative":
+        return "Minimal exposure to impermanent loss with steady fee collection. Ideal for stable pairs and risk-averse investors.";
+      case "Balanced":
+        return "Moderate risk exposure balanced with higher yield potential. Good for most trading pairs with regular activity.";
+      case "Aggressive":
+        return "Higher risk exposure targeting maximum yield from volatile pairs. Suitable for experienced LPs comfortable with IL risk.";
       default:
-        return ''
+        return "";
     }
-  }
+  };
 
   // Generate mock bin data for visualization
   const generateBinData = (template: StrategyTemplate) => {
-    const { binCount, rangeWidth, concentrationFactor = 0.6 } = template.binConfiguration
-    const bins = []
-    const centerPrice = 100 // Mock current price
-    const halfRange = rangeWidth / 2
-    
+    const {
+      binCount,
+      rangeWidth,
+      concentrationFactor = 0.6,
+    } = template.binConfiguration;
+    const bins = [];
+    const centerPrice = 100; // Mock current price
+    const halfRange = rangeWidth / 2;
+
     for (let i = 0; i < binCount; i++) {
-      const position = (i / (binCount - 1) - 0.5) * 2 // -1 to 1
-      const price = centerPrice * (1 + (position * halfRange) / 100)
-      
+      const position = (i / (binCount - 1) - 0.5) * 2; // -1 to 1
+      const price = centerPrice * (1 + (position * halfRange) / 100);
+
       // Calculate liquidity based on distribution type
-      let liquidity
-      if (template.binConfiguration.distribution === 'concentrated') {
-        liquidity = Math.max(0.1, concentrationFactor * Math.exp(-Math.abs(position * 2)))
-      } else if (template.binConfiguration.distribution === 'weighted') {
-        liquidity = Math.max(0.2, 1 - Math.abs(position) * 0.6)
-      } else { // uniform
-        liquidity = 0.8 + Math.random() * 0.4
+      let liquidity;
+      if (template.binConfiguration.distribution === "concentrated") {
+        liquidity = Math.max(
+          0.1,
+          concentrationFactor * Math.exp(-Math.abs(position * 2)),
+        );
+      } else if (template.binConfiguration.distribution === "weighted") {
+        liquidity = Math.max(0.2, 1 - Math.abs(position) * 0.6);
+      } else {
+        // uniform
+        liquidity = 0.8 + Math.random() * 0.4;
       }
-      
+
       bins.push({
         id: i,
         price: +price.toFixed(2),
         liquidity: +(liquidity * 100).toFixed(1),
-        active: Math.abs(position) < 0.2 // Active if near center
-      })
+        active: Math.abs(position) < 0.2, // Active if near center
+      });
     }
-    
-    return bins
-  }
 
-  const binData = generateBinData(template)
-  const currentPrice = 100 // Mock current price
+    return bins;
+  };
+
+  const binData = generateBinData(template);
+  const currentPrice = 100; // Mock current price
 
   if (showSimulator) {
     return (
       <StrategySimulator
         template={template}
         onClose={() => {
-          setShowSimulator(false)
-          onClose()
+          setShowSimulator(false);
+          onClose();
         }}
       />
-    )
+    );
   }
 
   return (
@@ -140,22 +160,27 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
                 <Badge
                   variant="secondary"
                   className={`${getRiskLevelBgColor(template.riskLevel)} ${getRiskLevelColor(
-                    template.riskLevel
+                    template.riskLevel,
                   )} border-0`}
                 >
                   {getRiskIcon(template.riskLevel)}
                   <span className="ml-1">{template.riskLevel}</span>
                 </Badge>
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-muted-foreground">Risk Level:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Risk Level:
+                  </span>
                   <div className="flex">
                     {Array.from({ length: 5 }, (_, i) => (
                       <div
                         key={i}
                         className={`w-2 h-2 rounded-full mr-1 ${
                           i < template.riskRating
-                            ? getRiskLevelColor(template.riskLevel).replace('text-', 'bg-')
-                            : 'bg-muted'
+                            ? getRiskLevelColor(template.riskLevel).replace(
+                                "text-",
+                                "bg-",
+                              )
+                            : "bg-muted"
                         }`}
                       />
                     ))}
@@ -187,19 +212,25 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
                   <div className="text-2xl font-bold text-green-600 mb-1">
                     {template.estimatedAPR}%
                   </div>
-                  <div className="text-sm text-muted-foreground">Estimated APR</div>
+                  <div className="text-sm text-muted-foreground">
+                    Estimated APR
+                  </div>
                 </div>
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                   <div className="text-2xl font-bold mb-1">
                     {template.impermanentLossRisk}/5
                   </div>
-                  <div className="text-sm text-muted-foreground">IL Risk Rating</div>
+                  <div className="text-sm text-muted-foreground">
+                    IL Risk Rating
+                  </div>
                 </div>
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                   <div className="text-2xl font-bold mb-1">
                     ±{template.binConfiguration.rangeWidth / 2}%
                   </div>
-                  <div className="text-sm text-muted-foreground">Price Range</div>
+                  <div className="text-sm text-muted-foreground">
+                    Price Range
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -219,7 +250,9 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-muted-foreground">Total Bins</div>
-                    <div className="font-semibold">{template.binConfiguration.binCount}</div>
+                    <div className="font-semibold">
+                      {template.binConfiguration.binCount}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Distribution</div>
@@ -229,9 +262,14 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
                   </div>
                   {template.binConfiguration.concentrationFactor && (
                     <div className="col-span-2">
-                      <div className="text-muted-foreground">Concentration Factor</div>
+                      <div className="text-muted-foreground">
+                        Concentration Factor
+                      </div>
                       <div className="font-semibold">
-                        {(template.binConfiguration.concentrationFactor * 100).toFixed(0)}%
+                        {(
+                          template.binConfiguration.concentrationFactor * 100
+                        ).toFixed(0)}
+                        %
                       </div>
                     </div>
                   )}
@@ -252,25 +290,36 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Position Size</span>
                     <span className="font-medium">
-                      ${template.parameters.minTokenAmount} - ${template.parameters.maxTokenAmount.toLocaleString()}
+                      ${template.parameters.minTokenAmount} - $
+                      {template.parameters.maxTokenAmount.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Rebalance Threshold</span>
-                    <span className="font-medium">{template.parameters.rebalanceThreshold}%</span>
+                    <span className="text-muted-foreground">
+                      Rebalance Threshold
+                    </span>
+                    <span className="font-medium">
+                      {template.parameters.rebalanceThreshold}%
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Stop Loss</span>
-                    <span className="font-medium">{template.parameters.stopLossThreshold}%</span>
+                    <span className="font-medium">
+                      {template.parameters.stopLossThreshold}%
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Take Profit</span>
-                    <span className="font-medium">{template.parameters.takeProfitThreshold}%</span>
+                    <span className="font-medium">
+                      {template.parameters.takeProfitThreshold}%
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Auto Rebalance</span>
+                    <span className="text-muted-foreground">
+                      Auto Rebalance
+                    </span>
                     <span className="font-medium">
-                      {template.parameters.autoRebalance ? 'Enabled' : 'Manual'}
+                      {template.parameters.autoRebalance ? "Enabled" : "Manual"}
                     </span>
                   </div>
                 </div>
@@ -301,28 +350,39 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div className="text-muted-foreground mb-1">Daily Fees (Est.)</div>
+                  <div className="text-muted-foreground mb-1">
+                    Daily Fees (Est.)
+                  </div>
                   <div className="font-semibold text-green-600">
                     {((template.estimatedAPR / 365) * 0.8).toFixed(3)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground mb-1">Weekly Return</div>
+                  <div className="text-muted-foreground mb-1">
+                    Weekly Return
+                  </div>
                   <div className="font-semibold text-green-600">
                     {((template.estimatedAPR / 52) * 0.85).toFixed(2)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground mb-1">Monthly Return</div>
+                  <div className="text-muted-foreground mb-1">
+                    Monthly Return
+                  </div>
                   <div className="font-semibold text-green-600">
                     {(template.estimatedAPR / 12).toFixed(2)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground mb-1">Rebalance Freq.</div>
+                  <div className="text-muted-foreground mb-1">
+                    Rebalance Freq.
+                  </div>
                   <div className="font-semibold">
-                    {template.riskLevel === 'Conservative' ? 'Low' : 
-                     template.riskLevel === 'Balanced' ? 'Medium' : 'High'}
+                    {template.riskLevel === "Conservative"
+                      ? "Low"
+                      : template.riskLevel === "Balanced"
+                        ? "Medium"
+                        : "High"}
                   </div>
                 </div>
               </div>
@@ -343,5 +403,5 @@ export function TemplateDetailModal({ template, isOpen, onClose }: TemplateDetai
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
