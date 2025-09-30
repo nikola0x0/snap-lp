@@ -1,6 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
-import { RPC_ENDPOINT } from "@/constants/strategy-templates";
+
+const RPC_ENDPOINT = "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
 
 // Real DLMM SDK types
 interface RealPoolMetadata {
@@ -30,6 +31,21 @@ interface RealPairAccount {
 
 // Known DLMM pool addresses (Devnet pools)
 const KNOWN_POOLS = [
+  {
+    address: "H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ",
+    baseToken: {
+      mintAddress: "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM",
+      symbol: "PYUSD",
+      name: "PayPal USD",
+      decimals: 6,
+    },
+    quoteToken: {
+      mintAddress: "So11111111111111111111111111111111111111112",
+      symbol: "WSOL",
+      name: "Wrapped SOL",
+      decimals: 9,
+    }
+  },
   {
     address: "DMb8Xta7STwCkHwdWQSazjoJWG1vnNYkk2Pnenj9kPV",
     baseToken: {

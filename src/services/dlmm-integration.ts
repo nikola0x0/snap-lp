@@ -1,16 +1,17 @@
 import { Connection, PublicKey, Transaction, Keypair } from "@solana/web3.js";
-import { 
-  LiquidityBookServices, 
-  MODE, 
-  createUniformDistribution, 
-  LiquidityShape, 
-  findPosition, 
-  getBinRange, 
-  getMaxBinArray, 
-  getMaxPosition 
+import {
+  LiquidityBookServices,
+  MODE,
+  createUniformDistribution,
+  LiquidityShape,
+  findPosition,
+  getBinRange,
+  getMaxBinArray,
+  getMaxPosition
 } from "@saros-finance/dlmm-sdk";
 import bigDecimal from "js-big-decimal";
-import { RPC_ENDPOINT } from "@/constants/strategy-templates";
+
+const RPC_ENDPOINT = "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
 
 // DLMM Pool Configuration
 export interface DLMMPoolConfig {

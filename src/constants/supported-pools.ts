@@ -5,6 +5,11 @@
 
 export const SUPPORTED_POOLS = [
   {
+    address: "H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ",
+    name: "PYUSD/WSOL",
+    description: "PayPal USD / Wrapped SOL",
+  },
+  {
     address: "DMb8Xta7STwCkHwdWQSazjoJWG1vnNYkk2Pnenj9kPV",
     name: "WSOL/USDT",
     description: "Wrapped SOL / Tether USD",

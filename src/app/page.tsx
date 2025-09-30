@@ -4,12 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SwapSection } from "@/components/dashboard-sections/swap-section";
+import { SwapSectionSimple as SwapSection } from "@/components/dashboard-sections/swap-section-simple";
 import { PoolsSection } from "@/components/dashboard-sections/pools-section";
 import { TemplatesSection } from "@/components/dashboard-sections/templates-section";
 import { PortfolioSection } from "@/components/dashboard-sections/portfolio-section";
-import { DeploySection } from "@/components/dashboard-sections/deploy-section";
+import { DeploySection } from "@/components/dashboard-sections/deploy-section-simple";
 import { useAppStore } from "@/store/app-store";
+import { UnifiedSelectionBar } from "@/components/unified-selection-bar";
 import {
   LayoutDashboard,
   Search,
@@ -63,7 +64,6 @@ const navigationItems = [
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [swapModalOpen, setSwapModalOpen] = useState(false);
   const {
     currentStep,
     setStep,
@@ -233,41 +233,10 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto relative">
         <div className="p-4 lg:p-8">{renderSection()}</div>
-
-        {/* Floating Swap Button */}
-        <Button
-          onClick={() => setSwapModalOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-40"
-          size="icon"
-        >
-          <ArrowUpDown className="w-6 h-6" />
-        </Button>
       </main>
 
-      {/* Swap Modal */}
-      {swapModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setSwapModalOpen(false)}
-          />
-          <Card className="relative w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-background border-b p-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Swap Tokens</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSwapModalOpen(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="p-4">
-              <SwapSection />
-            </div>
-          </Card>
-        </div>
-      )}
+      {/* Unified Selection Bar - Fixed at bottom across all tabs */}
+      <UnifiedSelectionBar />
     </div>
   );
 }

@@ -6,8 +6,8 @@ import { TemplatesGallery } from "../templates-gallery";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { useAppStore } from "@/store/app-store";
+import { StrategyInfoModal } from "../strategy-info-modal";
 import {
   BarChart3,
   Filter,
@@ -16,7 +16,7 @@ import {
   Trophy,
   ArrowLeft,
   CheckCircle,
-  ArrowRight,
+  Info,
 } from "lucide-react";
 
 type FilterType = "all" | "Conservative" | "Balanced" | "Aggressive";
@@ -24,8 +24,8 @@ type FilterType = "all" | "Conservative" | "Balanced" | "Aggressive";
 export function TemplatesSection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol } =
-    useAppStore();
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const { selectedPool, setStep, getTokenPairSymbol } = useAppStore();
 
   const filteredTemplates = STRATEGY_TEMPLATES.filter((template) => {
     const matchesSearch =
@@ -80,7 +80,7 @@ export function TemplatesSection() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
       {/* Pool Context Header */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-4">
@@ -107,14 +107,32 @@ export function TemplatesSection() {
       </Card>
 
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Step 2: Choose Strategy
-        </h1>
-        <p className="text-muted-foreground">
-          Select a strategy template optimized for {getTokenPairSymbol()}. These
-          templates are created by expert traders and the community.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Step 2: Choose Strategy
+            </h1>
+            <p className="text-muted-foreground">
+              Select a strategy template optimized for {getTokenPairSymbol()}. These
+              templates are created by expert traders and the community.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowInfoModal(true)}
+            className="gap-2"
+          >
+            <Info className="w-5 h-5" />
+            How Templates Work
+          </Button>
+        </div>
       </div>
+
+      <StrategyInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
 
       {/* Search and Filter Controls */}
       <div className="space-y-4">
@@ -196,46 +214,8 @@ export function TemplatesSection() {
 
       <TemplatesGallery templates={filteredTemplates} />
 
-      {/* Enhanced Strategy Selection Summary */}
-      {selectedTemplate && (
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Strategy Selected</h3>
-                  <p className="text-sm text-muted-foreground">
-                    <strong>{selectedTemplate.name}</strong> •{" "}
-                    {selectedTemplate.riskLevel} Risk • Est. APR:{" "}
-                    {selectedTemplate.estimatedAPR}%
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setStep("simulator")}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  Test in Simulator
-                </Button>
-                <Button
-                  onClick={() => setStep("deploy")}
-                  size="lg"
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  Deploy Strategy
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Bottom padding for fixed bar */}
+      <div className="h-40" />
     </div>
   );
 }

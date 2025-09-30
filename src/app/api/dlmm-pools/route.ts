@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(totalPools / size);
 
     // Transform the data to match expected format
-    const transformedPools = paginatedPools.map(pool => {
+    const transformedPools = paginatedPools.map((pool: any) => {
       const transformed = {
         address: pool.address,
         baseToken: {

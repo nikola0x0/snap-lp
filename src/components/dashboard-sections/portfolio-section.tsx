@@ -217,9 +217,9 @@ export function PortfolioSection() {
         });
 
       const allTxs: Transaction[] = [];
-      if (txCreateAccount) allTxs.push(txCreateAccount as Transaction);
-      allTxs.push(...(txs as Transaction[]));
-      if (txCloseAccount) allTxs.push(txCloseAccount as Transaction);
+      if (txCreateAccount) allTxs.push(txCreateAccount as any);
+      allTxs.push(...(txs as any));
+      if (txCloseAccount) allTxs.push(txCloseAccount as any);
 
       console.log(`📝 Executing ${allTxs.length} transactions...`);
 
@@ -230,7 +230,7 @@ export function PortfolioSection() {
         tx.recentBlockhash = blockhash;
         tx.feePayer = publicKey;
 
-        const signature = await sendTransaction(tx, dlmmService.connection, {
+        const signature = await sendTransaction(tx, dlmmService.connection as any, {
           skipPreflight: false,
           preflightCommitment: "confirmed",
         });
@@ -311,7 +311,6 @@ export function PortfolioSection() {
         tokenMintX: new PublicKey(position.tokenX),
         tokenMintY: new PublicKey(position.tokenY),
         activeId: (await dlmmService.getPairAccount(pairAddress))!.activeId,
-        bps: 0, // 0% = just claim fees without removing liquidity
       });
 
       console.log(`📝 Executing ${txs.length} fee claim transactions...`);
@@ -323,7 +322,7 @@ export function PortfolioSection() {
         tx.recentBlockhash = blockhash;
         tx.feePayer = publicKey;
 
-        const signature = await sendTransaction(tx, dlmmService.connection, {
+        const signature = await sendTransaction(tx, dlmmService.connection as any, {
           skipPreflight: false,
           preflightCommitment: "confirmed",
         });

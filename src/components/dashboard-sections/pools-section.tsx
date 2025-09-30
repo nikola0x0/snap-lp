@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import { useAppStore } from "@/store/app-store";
 import { SUPPORTED_POOLS } from "@/constants/supported-pools";
+import { TokenPairIcon } from "@/components/token-pair-icon";
 import {
   Search,
   Loader2,
@@ -93,7 +94,13 @@ export function PoolsSection() {
     Array<{ date: string; liquidity: number }>
   >([]);
   const [modalLoading, setModalLoading] = useState(false);
-  const { selectPool, setStep, setPools: setAppPools, selectedPool: currentlySelectedPool, isPoolSelected } = useAppStore();
+  const {
+    selectPool,
+    setStep,
+    setPools: setAppPools,
+    selectedPool: currentlySelectedPool,
+    isPoolSelected,
+  } = useAppStore();
 
   const loadPools = useCallback(async () => {
     try {
@@ -104,7 +111,7 @@ export function PoolsSection() {
 
       // Use the DLMM pools API endpoint and filter to supported pools
       try {
-        const response = await fetch('/api/dlmm-pools');
+        const response = await fetch("/api/dlmm-pools");
         const data = await response.json();
 
         if (!data.success || !data.pools) {
@@ -114,12 +121,14 @@ export function PoolsSection() {
         console.log(`📊 Got ${data.pools.length} pools from DLMM API`);
 
         // Filter to only supported pools
-        const supportedPoolAddresses = SUPPORTED_POOLS.map(p => p.address);
+        const supportedPoolAddresses = SUPPORTED_POOLS.map((p) => p.address);
         const supportedPoolsData = data.pools.filter((pool: any) =>
           supportedPoolAddresses.includes(pool.address)
         );
 
-        console.log(`🎯 Filtered to ${supportedPoolsData.length} supported pools`);
+        console.log(
+          `🎯 Filtered to ${supportedPoolsData.length} supported pools`
+        );
 
         // Get detailed metrics for each supported pool
         const poolsWithMetrics: PoolMetrics[] = [];
@@ -127,13 +136,14 @@ export function PoolsSection() {
         for (const pool of supportedPoolsData) {
           try {
             console.log(
-              `📈 Loading metrics for pool: ${pool.address.slice(0, 8)}...`,
+              `📈 Loading metrics for pool: ${pool.address.slice(0, 8)}...`
             );
             const metrics = await realDlmmService.getPoolMetrics(pool.address);
             if (metrics) {
               // Create pool name from token symbols (now properly available from API)
-              const poolName = `${pool.baseToken?.symbol || 'TOKEN'}/${pool.quoteToken?.symbol || 'TOKEN'}`;
-              
+              const poolName = `${pool.baseToken?.symbol || "TOKEN"}/${pool
+                .quoteToken?.symbol || "TOKEN"}`;
+
               poolsWithMetrics.push({
                 address: pool.address,
                 name: poolName,
@@ -145,7 +155,7 @@ export function PoolsSection() {
           } catch (err) {
             console.warn(
               `⚠️  Failed to load metrics for pool ${pool.address}:`,
-              err,
+              err
             );
           }
         }
@@ -153,7 +163,7 @@ export function PoolsSection() {
         if (poolsWithMetrics.length > 0) {
           setPools(poolsWithMetrics);
           console.log(
-            `✅ Successfully loaded ${poolsWithMetrics.length} pools with comprehensive metrics`,
+            `✅ Successfully loaded ${poolsWithMetrics.length} pools with comprehensive metrics`
           );
         } else {
           throw new Error("No pools loaded with metrics");
@@ -227,7 +237,7 @@ export function PoolsSection() {
 
         setPools(demoPoolsWithMetrics);
         console.log(
-          `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`,
+          `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`
         );
       }
     } catch (err) {
@@ -236,7 +246,7 @@ export function PoolsSection() {
     } finally {
       setLoading(false);
     }
-  }, [setAppPools]);;
+  }, [setAppPools]);
 
   useEffect(() => {
     loadPools();
@@ -295,7 +305,7 @@ export function PoolsSection() {
           return {
             date: date.toISOString().split("T")[0],
             liquidity: Math.floor(
-              pool.liquidity * trendFactor * (0.9 + Math.random() * 0.2),
+              pool.liquidity * trendFactor * (0.9 + Math.random() * 0.2)
             ),
           };
         });
@@ -332,7 +342,7 @@ export function PoolsSection() {
 
   const filteredPools = pools
     .filter((pool) =>
-      (pool.name || '').toLowerCase().includes(searchTerm.toLowerCase()),
+      (pool.name || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       const aVal = a[sortBy];
@@ -474,7 +484,8 @@ export function PoolsSection() {
           {/* Pool Cards */}
           <div className="space-y-3">
             {filteredPools.map((pool) => {
-              const isSelected = currentlySelectedPool?.address === pool.address;
+              const isSelected =
+                currentlySelectedPool?.address === pool.address;
               return (
                 <Card
                   key={pool.address}
@@ -489,9 +500,11 @@ export function PoolsSection() {
                     <div className="flex items-center justify-between gap-4">
                       {/* Pool Name & Icon */}
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                          {pool.name.split("/")[0][0]}
-                        </div>
+                        <TokenPairIcon
+                          tokenA={{ symbol: pool.name.split("/")[0] }}
+                          tokenB={{ symbol: pool.name.split("/")[1] }}
+                          size="md"
+                        />
                         <div>
                           <div className="font-semibold text-lg flex items-center gap-2">
                             {pool.name}
@@ -514,7 +527,9 @@ export function PoolsSection() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-gray-500">24H Volume</div>
+                          <div className="text-xs text-gray-500">
+                            24H Volume
+                          </div>
                           <div className="font-semibold">
                             {formatCurrency(pool.volume24h)}
                           </div>
@@ -560,26 +575,6 @@ export function PoolsSection() {
               </p>
             </div>
           )}
-
-          {/* Next Button */}
-          {isPoolSelected() && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-blue-900">
-                    Pool Selected: {currentlySelectedPool?.tokenX}/{currentlySelectedPool?.tokenY}
-                  </div>
-                  <div className="text-sm text-blue-700">
-                    Ready to choose a strategy template
-                  </div>
-                </div>
-                <Button onClick={() => setStep("templates")} size="lg">
-                  Browse Strategy Library
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -609,7 +604,8 @@ export function PoolsSection() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <div className="text-2xl font-bold">
-                          {selectedPool.originalPool?.baseToken?.symbol || 'TOKEN'}
+                          {selectedPool.originalPool?.baseToken?.symbol ||
+                            "TOKEN"}
                         </div>
                         <div className="text-lg font-medium text-gray-600">
                           Base Token
@@ -620,7 +616,8 @@ export function PoolsSection() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold">
-                          {selectedPool.originalPool?.quoteToken?.symbol || 'TOKEN'}
+                          {selectedPool.originalPool?.quoteToken?.symbol ||
+                            "TOKEN"}
                         </div>
                         <div className="text-lg font-medium text-gray-600">
                           Quote Token
@@ -637,9 +634,15 @@ export function PoolsSection() {
                       </div>
                       <div className="flex flex-col gap-1 text-sm">
                         <div>
-                          1 {selectedPool.originalPool?.baseToken?.symbol || 'TOKEN'} ={" "}
-                          {selectedPool.price ? selectedPool.price.toFixed(6) : '0.000000'}{" "}
-                          {selectedPool.originalPool?.quoteToken?.symbol || 'TOKEN'}
+                          1{" "}
+                          {selectedPool.originalPool?.baseToken?.symbol ||
+                            "TOKEN"}{" "}
+                          ={" "}
+                          {selectedPool.price
+                            ? selectedPool.price.toFixed(6)
+                            : "0.000000"}{" "}
+                          {selectedPool.originalPool?.quoteToken?.symbol ||
+                            "TOKEN"}
                         </div>
                         <div>
                           Price: {formatCurrency(selectedPool.price || 0)}
@@ -671,7 +674,7 @@ export function PoolsSection() {
                     <CardContent className="p-4 text-center">
                       <div className="text-lg font-bold">
                         {formatCurrency(
-                          (selectedPool.volume24h * selectedPool.feeRate) / 100,
+                          (selectedPool.volume24h * selectedPool.feeRate) / 100
                         )}
                       </div>
                       <div className="text-sm text-gray-600">24H Fee</div>
@@ -766,21 +769,30 @@ export function PoolsSection() {
                   <Button
                     onClick={() => {
                       // Use real mint addresses from original pool data
-                      console.log("🔍 Checking originalPool data:", selectedPool.originalPool);
+                      console.log(
+                        "🔍 Checking originalPool data:",
+                        selectedPool.originalPool
+                      );
                       const baseMint =
                         selectedPool.originalPool?.baseToken?.mint;
                       const quoteMint =
                         selectedPool.originalPool?.quoteToken?.mint;
 
-                      console.log("🔍 Extracted mint addresses:", { baseMint, quoteMint });
+                      console.log("🔍 Extracted mint addresses:", {
+                        baseMint,
+                        quoteMint,
+                      });
 
                       if (!baseMint || !quoteMint) {
                         console.error(
-                          "❌ Cannot deploy: Missing real mint addresses from pool metadata",
+                          "❌ Cannot deploy: Missing real mint addresses from pool metadata"
                         );
-                        console.error("Full pool data:", JSON.stringify(selectedPool, null, 2));
+                        console.error(
+                          "Full pool data:",
+                          JSON.stringify(selectedPool, null, 2)
+                        );
                         alert(
-                          "Error: Cannot deploy this pool - missing token mint addresses. Please try a different pool.",
+                          "Error: Cannot deploy this pool - missing token mint addresses. Please try a different pool."
                         );
                         return;
                       }
@@ -802,18 +814,18 @@ export function PoolsSection() {
                           poolAddress: selectedPool.address,
                           baseMint: baseMint,
                           baseReserve:
-                            selectedPool.originalPool?.reserves?.base ||
-                            "0",
+                            selectedPool.originalPool?.reserves?.base || "0",
                           quoteMint: quoteMint,
                           quoteReserve:
-                            selectedPool.originalPool?.reserves?.quote ||
-                            "0",
+                            selectedPool.originalPool?.reserves?.quote || "0",
                           tradeFee: selectedPool.feeRate,
                           extra: {
                             tokenBaseDecimal:
-                              selectedPool.originalPool?.baseToken?.decimals || 9,
+                              selectedPool.originalPool?.baseToken?.decimals ||
+                              9,
                             tokenQuoteDecimal:
-                              selectedPool.originalPool?.quoteToken?.decimals || 9,
+                              selectedPool.originalPool?.quoteToken?.decimals ||
+                              9,
                             hook: undefined,
                           },
                         },
@@ -838,6 +850,9 @@ export function PoolsSection() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bottom padding for fixed bar */}
+      <div className="h-40" />
     </>
   );
 }
