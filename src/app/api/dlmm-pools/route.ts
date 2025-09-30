@@ -43,25 +43,34 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(totalPools / size);
 
     // Transform the data to match expected format
-    const transformedPools = paginatedPools.map(pool => ({
-      address: pool.address,
-      baseToken: {
-        symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.baseMint),
-        mint: pool.metadata.baseMint,
-        decimals: pool.metadata.extra.tokenBaseDecimal,
-      },
-      quoteToken: {
-        symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.quoteMint),
-        mint: pool.metadata.quoteMint,
-        decimals: pool.metadata.extra.tokenQuoteDecimal,
-      },
-      reserves: {
-        base: pool.metadata.baseReserve,
-        quote: pool.metadata.quoteReserve,
-      },
-      feeRate: pool.metadata.tradeFee,
-      type: "DLMM",
-    }));
+    const transformedPools = paginatedPools.map(pool => {
+      const transformed = {
+        address: pool.address,
+        baseToken: {
+          symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.baseMint),
+          mint: pool.metadata.baseMint,
+          decimals: pool.metadata.extra.tokenBaseDecimal,
+        },
+        quoteToken: {
+          symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.quoteMint),
+          mint: pool.metadata.quoteMint,
+          decimals: pool.metadata.extra.tokenQuoteDecimal,
+        },
+        reserves: {
+          base: pool.metadata.baseReserve,
+          quote: pool.metadata.quoteReserve,
+        },
+        feeRate: pool.metadata.tradeFee,
+        type: "DLMM",
+      };
+
+      // Log first pool for debugging
+      if (pool === paginatedPools[0]) {
+        console.log(`📋 Sample transformed pool:`, JSON.stringify(transformed, null, 2));
+      }
+
+      return transformed;
+    });
 
     console.log(`✅ Successfully returned ${transformedPools.length} DLMM pools`);
 

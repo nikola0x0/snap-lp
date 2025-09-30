@@ -60,7 +60,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   const handleSimulate = () => {
     selectTemplate(template);
-    setStep("simulator"); // Navigate directly to simulator
+    setShowSimulator(true); // Open simulator popup
   };
 
   const handleDeploy = () => {

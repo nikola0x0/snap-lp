@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SwapSection } from "@/components/dashboard-sections/swap-section";
 import { PoolsSection } from "@/components/dashboard-sections/pools-section";
 import { TemplatesSection } from "@/components/dashboard-sections/templates-section";
-import { SimulatorSection } from "@/components/dashboard-sections/simulator-section";
 import { PortfolioSection } from "@/components/dashboard-sections/portfolio-section";
 import { DeploySection } from "@/components/dashboard-sections/deploy-section";
 import { useAppStore } from "@/store/app-store";
 import {
   LayoutDashboard,
   Search,
-  TrendingUp,
   Wallet,
   Plus,
   X,
@@ -26,7 +24,6 @@ import {
 export type DashboardSection =
   | "pools"
   | "templates"
-  | "simulator"
   | "deploy"
   | "portfolio"
   | "create";
@@ -34,45 +31,33 @@ export type DashboardSection =
 const navigationItems = [
   {
     id: "pools" as DashboardSection,
-    label: "Select Pool",
+    label: "Pools",
     icon: Search,
-    description: "Choose DLMM pool",
-    step: 1,
+    description: "DLMM pools",
   },
   {
     id: "templates" as DashboardSection,
-    label: "Choose Strategy",
+    label: "Strategy Library",
     icon: LayoutDashboard,
     description: "Browse strategies",
-    step: 2,
-  },
-  {
-    id: "simulator" as DashboardSection,
-    label: "Simulate",
-    icon: TrendingUp,
-    description: "Test before deploy",
-    step: 3,
   },
   {
     id: "deploy" as DashboardSection,
     label: "Deploy",
     icon: Plus,
     description: "Create position",
-    step: 4,
   },
   {
     id: "portfolio" as DashboardSection,
     label: "Portfolio",
     icon: Wallet,
     description: "Your positions",
-    step: 5,
   },
   {
     id: "create" as DashboardSection,
     label: "Create Strategy",
     icon: Plus,
     description: "Build & share",
-    step: 6,
   },
 ];
 
@@ -82,17 +67,12 @@ export default function Home() {
   const {
     currentStep,
     setStep,
-    selectedPool,
     selectedTemplate,
     getTokenPairSymbol,
     isPoolSelected,
     isTemplateSelected,
   } = useAppStore();
 
-  // Sync with app store
-  useEffect(() => {
-    // Auto-navigate based on app state
-  }, [currentStep]);
 
   const renderSection = () => {
     switch (currentStep) {
@@ -100,8 +80,6 @@ export default function Home() {
         return <PoolsSection />;
       case "templates":
         return <TemplatesSection />;
-      case "simulator":
-        return <SimulatorSection />;
       case "deploy":
         return <DeploySection />;
       case "portfolio":
@@ -118,32 +96,12 @@ export default function Home() {
     }
   };
 
-  const getStepStatus = (step: number) => {
-    if (step === 1 && isPoolSelected()) return "completed";
-    if (step === 2 && isTemplateSelected()) return "completed";
-    if (step <= getCurrentStepNumber()) return "current";
-    return "upcoming";
-  };
-
-  const getCurrentStepNumber = () => {
-    const stepMap = {
-      pools: 1,
-      templates: 2,
-      simulator: 3,
-      deploy: 4,
-      portfolio: 5,
-      create: 6,
-    };
-    return stepMap[currentStep] || 1;
-  };
-
   const canAccessStep = (stepId: DashboardSection) => {
     if (stepId === "pools") return true;
-    if (stepId === "templates") return isPoolSelected();
-    if (stepId === "simulator") return isPoolSelected() && isTemplateSelected();
+    if (stepId === "templates") return true;
     if (stepId === "deploy") return isPoolSelected() && isTemplateSelected();
-    if (stepId === "portfolio") return true; // Always accessible
-    if (stepId === "create") return true; // Always accessible
+    if (stepId === "portfolio") return true;
+    if (stepId === "create") return true;
     return false;
   };
 
@@ -182,7 +140,6 @@ export default function Home() {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentStep === item.id;
-            const stepStatus = getStepStatus(item.step);
             const canAccess = canAccessStep(item.id);
 
             return (
@@ -191,36 +148,18 @@ export default function Home() {
                 variant={isActive ? "secondary" : "ghost"}
                 disabled={!canAccess}
                 className={`w-full justify-start h-auto p-3 relative ${
-                  isActive ? "bg-primary/10 border-primary/20" : ""
+                  isActive ? "bg-primary/10" : ""
                 } ${!canAccess ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={() => canAccess && setStep(item.id)}
               >
                 <div className="flex items-center w-full">
-                  <div className="flex items-center flex-1">
-                    <div className="flex items-center justify-center w-6 h-6 mr-3">
-                      {stepStatus === "completed" ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : stepStatus === "current" ? (
-                        <Icon className="w-4 h-4 text-primary" />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30" />
-                      )}
-                    </div>
-                    <div className="text-left flex-1">
-                      <div className="font-medium flex items-center gap-2">
-                        {item.label}
-                        <span className="text-xs text-muted-foreground">
-                          ({item.step})
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {item.description}
-                      </div>
+                  <Icon className="w-5 h-5 mr-3" />
+                  <div className="text-left flex-1">
+                    <div className="font-medium">{item.label}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {item.description}
                     </div>
                   </div>
-                  {stepStatus === "current" && canAccess && (
-                    <ArrowRight className="w-3 h-3 text-primary/70" />
-                  )}
                 </div>
               </Button>
             );
@@ -259,7 +198,6 @@ export default function Home() {
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentStep === item.id;
-                const stepStatus = getStepStatus(item.step);
                 const canAccess = canAccessStep(item.id);
 
                 return (
@@ -277,15 +215,7 @@ export default function Home() {
                       }
                     }}
                   >
-                    <div className="flex items-center justify-center w-6 h-6 mr-3">
-                      {stepStatus === "completed" ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : stepStatus === "current" ? (
-                        <Icon className="w-4 h-4 text-primary" />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30" />
-                      )}
-                    </div>
+                    <Icon className="w-5 h-5 mr-3" />
                     <div className="text-left">
                       <div className="font-medium">{item.label}</div>
                       <div className="text-xs text-muted-foreground">

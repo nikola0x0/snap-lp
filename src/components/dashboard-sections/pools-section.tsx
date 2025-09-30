@@ -25,6 +25,7 @@ import {
   Line,
 } from "recharts";
 import { useAppStore } from "@/store/app-store";
+import { SUPPORTED_POOLS } from "@/constants/supported-pools";
 import {
   Search,
   Loader2,
@@ -32,6 +33,7 @@ import {
   BarChart3,
   ArrowUpDown,
   Eye,
+  CheckCircle2,
 } from "lucide-react";
 
 interface PoolMetrics {
@@ -45,6 +47,14 @@ interface PoolMetrics {
   price: number;
   priceChange24h: number;
   activeBin: number;
+  totalTokensLocked?: {
+    tokenA: { symbol: string; amount: number };
+    tokenB: { symbol: string; amount: number };
+  };
+  exchangeRates?: {
+    aToB: number;
+    bToA: number;
+  };
   originalPool?: {
     address: string;
     baseToken: {
@@ -83,7 +93,7 @@ export function PoolsSection() {
     Array<{ date: string; liquidity: number }>
   >([]);
   const [modalLoading, setModalLoading] = useState(false);
-  const { selectPool, setStep, setPools: setAppPools } = useAppStore();
+  const { selectPool, setStep, setPools: setAppPools, selectedPool: currentlySelectedPool, isPoolSelected } = useAppStore();
 
   const loadPools = useCallback(async () => {
     try {
@@ -92,21 +102,29 @@ export function PoolsSection() {
 
       console.log("🔄 Starting pool loading process...");
 
-      // Use the DLMM pools API endpoint instead of direct service call
+      // Use the DLMM pools API endpoint and filter to supported pools
       try {
         const response = await fetch('/api/dlmm-pools');
         const data = await response.json();
-        
+
         if (!data.success || !data.pools) {
           throw new Error(data.error || "No DLMM pools found");
         }
 
         console.log(`📊 Got ${data.pools.length} pools from DLMM API`);
 
-        // Get detailed metrics for each pool
+        // Filter to only supported pools
+        const supportedPoolAddresses = SUPPORTED_POOLS.map(p => p.address);
+        const supportedPoolsData = data.pools.filter((pool: any) =>
+          supportedPoolAddresses.includes(pool.address)
+        );
+
+        console.log(`🎯 Filtered to ${supportedPoolsData.length} supported pools`);
+
+        // Get detailed metrics for each supported pool
         const poolsWithMetrics: PoolMetrics[] = [];
 
-        for (const pool of data.pools.slice(0, 10)) {
+        for (const pool of supportedPoolsData) {
           try {
             console.log(
               `📈 Loading metrics for pool: ${pool.address.slice(0, 8)}...`,
@@ -208,7 +226,6 @@ export function PoolsSection() {
         ];
 
         setPools(demoPoolsWithMetrics);
-        setAppPools(demoPoolsWithMetrics); // Also save to global store for portfolio
         console.log(
           `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`,
         );
@@ -224,6 +241,36 @@ export function PoolsSection() {
   useEffect(() => {
     loadPools();
   }, [loadPools]);
+
+  const handleSelectPool = (pool: PoolMetrics) => {
+    const baseMint = pool.originalPool?.baseToken?.mint;
+    const quoteMint = pool.originalPool?.quoteToken?.mint;
+
+    if (!baseMint || !quoteMint) {
+      console.error("❌ Cannot select: Missing mint addresses");
+      alert("Error: Cannot select this pool - missing token mint addresses.");
+      return;
+    }
+
+    selectPool({
+      address: pool.address,
+      tokenX: pool.originalPool?.baseToken?.symbol || "Unknown",
+      tokenY: pool.originalPool?.quoteToken?.symbol || "Unknown",
+      metadata: {
+        poolAddress: pool.address,
+        baseMint: baseMint,
+        baseReserve: pool.originalPool?.reserves?.base || "0",
+        quoteMint: quoteMint,
+        quoteReserve: pool.originalPool?.reserves?.quote || "0",
+        tradeFee: pool.feeRate,
+        extra: {
+          tokenBaseDecimal: pool.originalPool?.baseToken?.decimals || 9,
+          tokenQuoteDecimal: pool.originalPool?.quoteToken?.decimals || 9,
+          hook: undefined,
+        },
+      },
+    });
+  };
 
   const openPoolDetails = async (pool: PoolMetrics) => {
     setSelectedPool(pool);
@@ -414,104 +461,96 @@ export function PoolsSection() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
-          {/* Header Row */}
-          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
-            <div className="col-span-3">
-              <SortButton label="Pool Name" sortKey="name" />
-            </div>
-            <div className="col-span-2 text-right">
-              <SortButton label="Liquidity" sortKey="liquidity" />
-            </div>
-            <div className="col-span-2 text-right">
-              <SortButton label="24H Volume" sortKey="volume24h" />
-            </div>
-            <div className="col-span-2 text-right">
-              <SortButton label="7D Volume" sortKey="volume7d" />
-            </div>
-            <div className="col-span-1 text-right">
-              <span className="text-xs">Fee</span>
-            </div>
-            <div className="col-span-1 text-right">
-              <SortButton label="APR" sortKey="apr" />
-            </div>
-            <div className="col-span-1 text-center">
-              <span className="text-xs">Action</span>
-            </div>
+        <CardContent className="p-4">
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-sm text-muted-foreground">Sort by:</span>
+            <SortButton label="Pool Name" sortKey="name" />
+            <SortButton label="Liquidity" sortKey="liquidity" />
+            <SortButton label="24H Volume" sortKey="volume24h" />
+            <SortButton label="APR" sortKey="apr" />
           </div>
 
-          {/* Pool Rows */}
-          <div className="divide-y">
-            {filteredPools.map((pool) => (
-              <div
-                key={pool.address}
-                className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50 transition-colors"
-              >
-                {/* Pool Name */}
-                <div className="col-span-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                      {pool.name.split("/")[0][0]}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{pool.name}</div>
-                      <div className="text-xs text-gray-500">
-                        Bin #{pool.activeBin}
+          {/* Pool Cards */}
+          <div className="space-y-3">
+            {filteredPools.map((pool) => {
+              const isSelected = currentlySelectedPool?.address === pool.address;
+              return (
+                <Card
+                  key={pool.address}
+                  className={`cursor-pointer transition-all hover:shadow-md ${
+                    isSelected
+                      ? "border-2 border-blue-500 bg-blue-50/50"
+                      : "border-2 border-transparent"
+                  }`}
+                  onClick={() => handleSelectPool(pool)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Pool Name & Icon */}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                          {pool.name.split("/")[0][0]}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-lg flex items-center gap-2">
+                            {pool.name}
+                            {isSelected && (
+                              <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Active Bin #{pool.activeBin}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Metrics */}
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Liquidity</div>
+                          <div className="font-semibold">
+                            {formatCurrency(pool.liquidity)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">24H Volume</div>
+                          <div className="font-semibold">
+                            {formatCurrency(pool.volume24h)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">APR</div>
+                          <div className="font-semibold text-green-600">
+                            {pool.apr.toFixed(1)}%
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Fee</div>
+                          <Badge variant="outline" className="text-xs">
+                            {pool.feeRate}%
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openPoolDetails(pool);
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Liquidity */}
-                <div className="col-span-2 text-right">
-                  <div className="font-semibold">
-                    {formatCurrency(pool.liquidity)}
-                  </div>
-                  <div className="text-xs text-gray-500">Total TVL</div>
-                </div>
-
-                {/* 24H Volume */}
-                <div className="col-span-2 text-right">
-                  <div className="font-semibold">
-                    {formatCurrency(pool.volume24h)}
-                  </div>
-                  <div className="text-xs text-gray-500">24h trading</div>
-                </div>
-
-                {/* 7D Volume */}
-                <div className="col-span-2 text-right">
-                  <div className="font-semibold">
-                    {formatCurrency(pool.volume7d)}
-                  </div>
-                  <div className="text-xs text-gray-500">7d trading</div>
-                </div>
-
-                {/* Fee Rate */}
-                <div className="col-span-1 text-right">
-                  <Badge variant="outline" className="text-xs">
-                    {pool.feeRate}%
-                  </Badge>
-                </div>
-
-                {/* APR */}
-                <div className="col-span-1 text-right">
-                  <div className="font-semibold text-green-600">
-                    {pool.apr.toFixed(1)}%
-                  </div>
-                </div>
-
-                {/* Action */}
-                <div className="col-span-1 text-center">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => openPoolDetails(pool)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           {filteredPools.length === 0 && (
@@ -519,6 +558,26 @@ export function PoolsSection() {
               <p className="text-gray-500">
                 No pools match your search criteria
               </p>
+            </div>
+          )}
+
+          {/* Next Button */}
+          {isPoolSelected() && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-blue-900">
+                    Pool Selected: {currentlySelectedPool?.tokenX}/{currentlySelectedPool?.tokenY}
+                  </div>
+                  <div className="text-sm text-blue-700">
+                    Ready to choose a strategy template
+                  </div>
+                </div>
+                <Button onClick={() => setStep("templates")} size="lg">
+                  Browse Strategy Library
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
@@ -707,15 +766,19 @@ export function PoolsSection() {
                   <Button
                     onClick={() => {
                       // Use real mint addresses from original pool data
+                      console.log("🔍 Checking originalPool data:", selectedPool.originalPool);
                       const baseMint =
                         selectedPool.originalPool?.baseToken?.mint;
                       const quoteMint =
                         selectedPool.originalPool?.quoteToken?.mint;
 
+                      console.log("🔍 Extracted mint addresses:", { baseMint, quoteMint });
+
                       if (!baseMint || !quoteMint) {
                         console.error(
                           "❌ Cannot deploy: Missing real mint addresses from pool metadata",
                         );
+                        console.error("Full pool data:", JSON.stringify(selectedPool, null, 2));
                         alert(
                           "Error: Cannot deploy this pool - missing token mint addresses. Please try a different pool.",
                         );
@@ -730,11 +793,9 @@ export function PoolsSection() {
                       selectPool({
                         address: selectedPool.address,
                         tokenX:
-                          selectedPool.originalPool?.tokenX ||
                           selectedPool.originalPool?.baseToken?.symbol ||
                           "Unknown",
                         tokenY:
-                          selectedPool.originalPool?.tokenY ||
                           selectedPool.originalPool?.quoteToken?.symbol ||
                           "Unknown",
                         metadata: {

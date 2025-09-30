@@ -28,24 +28,53 @@ interface RealPairAccount {
   protocolFeesY: string;
 }
 
-// Known DLMM pool addresses on devnet (from reference examples)
+// Known DLMM pool addresses (Devnet pools)
 const KNOWN_POOLS = [
   {
-    address: "H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ",
+    address: "DMb8Xta7STwCkHwdWQSazjoJWG1vnNYkk2Pnenj9kPV",
     baseToken: {
-      mintAddress: "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM",
-      symbol: "PYUSD",
-      name: "PAYPAL USD",
+      mintAddress: "So11111111111111111111111111111111111111112",
+      symbol: "WSOL",
+      name: "Wrapped SOL",
+      decimals: 9,
+    },
+    quoteToken: {
+      mintAddress: "mnt3Mc5iK8UNZheyPmS9UQKrM6Rz5s4d8x63BUv22F9",
+      symbol: "USDT",
+      name: "Tether USD",
       decimals: 6,
+    }
+  },
+  {
+    address: "3jPMRAaibizCW1nZhyyuSsDSy7beSP4yAfJZtxCBsYuD",
+    baseToken: {
+      mintAddress: "9WNGiZEescNbYYRh8iFNLwXerk6Cxvs4Lo5tckQDpJDt",
+      symbol: "TKN1",
+      name: "Test Token 1",
+      decimals: 9,
     },
     quoteToken: {
       mintAddress: "So11111111111111111111111111111111111111112",
       symbol: "WSOL",
-      name: "Wrapped SOL", 
+      name: "Wrapped SOL",
       decimals: 9,
     }
   },
-  // Add more known pools here as needed
+  {
+    address: "7zzwywSok1HLmpqd2SpctCUbDR6oV4RYZmmMPgNxWDs5",
+    baseToken: {
+      mintAddress: "FAg5dMk72hEBkohyirpvVmiTQmoRNwZsKhYF4ar8EcUL",
+      symbol: "TKN2",
+      name: "Test Token 2",
+      decimals: 9,
+    },
+    quoteToken: {
+      mintAddress: "So11111111111111111111111111111111111111112",
+      symbol: "WSOL",
+      name: "Wrapped SOL",
+      decimals: 9,
+    }
+  },
 ];
 
 /**
@@ -118,11 +147,22 @@ export class RealDLMMService {
             continue;
           }
 
+          // Use actual mints from pair account (fetched from blockchain)
+          const actualBaseMint = pairAccount.tokenMintX.toString();
+          const actualQuoteMint = pairAccount.tokenMintY.toString();
+
+          console.log(`  📋 Pool ${pool.address.slice(0, 8)} token mints:`, {
+            baseMint: actualBaseMint,
+            quoteMint: actualQuoteMint,
+            baseSymbol: this.getTokenSymbolFromAddress(actualBaseMint),
+            quoteSymbol: this.getTokenSymbolFromAddress(actualQuoteMint),
+          });
+
           // Create metadata object from pair account info
           const metadataObj: RealPoolMetadata = {
             poolAddress: pool.address,
-            baseMint: pool.baseToken.mintAddress,
-            quoteMint: pool.quoteToken.mintAddress,
+            baseMint: actualBaseMint,
+            quoteMint: actualQuoteMint,
             baseReserve: "1000000", // Mock reserves for demo - in real implementation would get from reserves
             quoteReserve: "2000000",
             tradeFee: 0.003, // 0.3% fee
@@ -417,14 +457,30 @@ export class RealDLMMService {
 
   // Helper method to get token symbol from mint address
   getTokenSymbolFromAddress(mintAddress: string): string {
-    // Map known mint addresses to symbols
-    const knownTokens = {
-      "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM": "PYUSD",
+    // First check KNOWN_POOLS for symbol mapping
+    for (const pool of KNOWN_POOLS) {
+      if (pool.baseToken.mintAddress === mintAddress) {
+        return pool.baseToken.symbol;
+      }
+      if (pool.quoteToken.mintAddress === mintAddress) {
+        return pool.quoteToken.symbol;
+      }
+    }
+
+    // Fallback to known tokens map (Devnet tokens)
+    const knownTokens: Record<string, string> = {
+      // SOL
       "So11111111111111111111111111111111111111112": "WSOL",
+      // Stablecoins (Devnet)
+      "mnt3Mc5iK8UNZheyPmS9UQKrM6Rz5s4d8x63BUv22F9": "USDT",
+      "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM": "PYUSD",
       "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr": "USDC",
+      // Test tokens (Devnet)
+      "9WNGiZEescNbYYRh8iFNLwXerk6Cxvs4Lo5tckQDpJDt": "TKN1",
+      "FAg5dMk72hEBkohyirpvVmiTQmoRNwZsKhYF4ar8EcUL": "TKN2",
     };
-    
-    return knownTokens[mintAddress as keyof typeof knownTokens] || `TOKEN_${mintAddress.slice(0, 8)}`;
+
+    return knownTokens[mintAddress] || `TOKEN_${mintAddress.slice(0, 8)}`;
   }
 }
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { dlmmClient } from "@/services/dlmm-client";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
+import { dlmmIntegration } from "@/services/dlmm-integration";
 
 export interface DeployConfig {
   tokenXAmount: number;
@@ -29,7 +30,6 @@ export interface SelectedTemplate {
  */
 export function useDLMMDeploy() {
   const { wallet, publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
   const [isDeploying, setIsDeploying] = useState(false);
 
   const deployToPool = async (
@@ -64,14 +64,43 @@ export function useDLMMDeploy() {
       console.log("- Amounts:", `${deployConfig.tokenXAmount} ${selectedPool.baseToken.symbol}, ${deployConfig.tokenYAmount} ${selectedPool.quoteToken.symbol}`);
       console.log("- Wallet:", publicKey.toString().slice(0, 8) + "...");
 
+      // Get strategy parameters
+      const strategies = dlmmIntegration.getStrategyTemplates();
+      const strategyType = getStrategyType(selectedTemplate.name);
+      const baseStrategyParams = strategies[strategyType];
+
+      if (!baseStrategyParams) {
+        throw new Error("Invalid strategy type");
+      }
+
+      // Create pool configuration
+      const poolConfig = {
+        address: selectedPool.address,
+        baseToken: {
+          mintAddress: selectedPool.baseToken.mint,
+          symbol: selectedPool.baseToken.symbol,
+          name: selectedPool.baseToken.symbol,
+          decimals: 6, // Will be fetched from chain if needed
+        },
+        quoteToken: {
+          mintAddress: selectedPool.quoteToken.mint,
+          symbol: selectedPool.quoteToken.symbol,
+          name: selectedPool.quoteToken.symbol,
+          decimals: 6,
+        },
+      };
+
+      // Create strategy parameters with custom amounts
+      const strategyParams = {
+        ...baseStrategyParams,
+        amountX: deployConfig.tokenXAmount,
+        amountY: deployConfig.tokenYAmount,
+      };
+
       // Execute real DLMM deployment
-      const result = await dlmmClient.deployStrategy(
-        selectedPool.address,
-        selectedPool.baseToken.mint,
-        selectedPool.quoteToken.mint,
-        getStrategyType(selectedTemplate.name),
-        deployConfig.tokenXAmount,
-        deployConfig.tokenYAmount,
+      const result = await dlmmIntegration.addLiquidity(
+        poolConfig,
+        strategyParams,
         wallet,
         sendTransaction
       );
@@ -113,7 +142,7 @@ export function useDLMMDeploy() {
 
   const testConnection = async () => {
     try {
-      const result = await dlmmClient.testConnection();
+      const result = await dlmmIntegration.testConnection();
       console.log("🧪 DLMM connection test:", result);
       return result;
     } catch (error) {
@@ -128,10 +157,16 @@ export function useDLMMDeploy() {
     }
 
     try {
-      const positions = await dlmmClient.getUserPositions(
-        publicKey.toString(),
-        poolAddress
-      );
+      // Get positions directly from DLMM SDK
+      if (!poolAddress) {
+        console.log("Getting all positions not yet implemented");
+        return [];
+      }
+
+      const positions = await dlmmIntegration["dlmm"].getUserPositions({
+        payer: publicKey,
+        pair: new PublicKey(poolAddress),
+      });
       return positions;
     } catch (error) {
       console.error("❌ Failed to get user positions:", error);

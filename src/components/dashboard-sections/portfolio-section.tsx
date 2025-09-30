@@ -1,20 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { ClientOnly } from "../client-only";
 import { useAppStore } from "@/store/app-store";
-import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
+import { LiquidityBookServices, MODE, RemoveLiquidityType } from "@saros-finance/dlmm-sdk";
 import { SUPPORTED_POOLS } from "@/constants/supported-pools";
 import {
   TrendingUp,
-  TrendingDown,
-  DollarSign,
   Percent,
   AlertTriangle,
   RefreshCw,
@@ -48,12 +46,12 @@ interface DLMMPosition {
 }
 
 export function PortfolioSection() {
-  const { connected, publicKey } = useWallet();
-  const { connection } = useConnection();
+  const { connected, publicKey, sendTransaction } = useWallet();
   const { selectedPool } = useAppStore();
   const [positions, setPositions] = useState<DLMMPosition[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [processingPosition, setProcessingPosition] = useState<string | null>(null);
 
   // Fetch real DLMM positions
   const fetchPositions = async () => {
@@ -70,11 +68,11 @@ export function PortfolioSection() {
 
       const allPositions: DLMMPosition[] = [];
 
-      // Get pool details for our supported pools from API
-      const response = await fetch("https://api-service-dev.saros.finance/v0/dlmm/pools");
+      // Get pool details for our supported pools from local API
+      const response = await fetch("/api/dlmm-pools");
       const data = await response.json();
 
-      if (!data.pools || data.pools.length === 0) {
+      if (!data.success || !data.pools || data.pools.length === 0) {
         console.warn("⚠️ No pools available from API");
         setPositions([]);
         return;
@@ -158,6 +156,191 @@ export function PortfolioSection() {
       setError(err instanceof Error ? err.message : "Failed to fetch positions");
     } finally {
       setLoading(false);
+    }
+  };
+  // Remove liquidity from a position
+  const handleRemoveLiquidity = async (position: DLMMPosition) => {
+    if (!publicKey || !sendTransaction) {
+      alert("Please connect your wallet");
+      return;
+    }
+
+    const confirmed = confirm(
+      `Remove all liquidity from position ${position.positionMint.slice(0, 8)}...?\n\nThis will withdraw all tokens and close the position.`
+    );
+
+    if (!confirmed) return;
+
+    setProcessingPosition(position.positionMint);
+
+    try {
+      console.log("🔄 Removing liquidity from position:", position.positionMint);
+
+      const pairAddress = new PublicKey(position.poolAddress);
+      const pairInfo = await dlmmService.getPairAccount(pairAddress);
+
+      if (!pairInfo) {
+        throw new Error("Could not fetch pair info");
+      }
+
+      // Get the user's position details
+      const userPositions = await dlmmService.getUserPositions({
+        payer: publicKey,
+        pair: pairAddress,
+      });
+
+      const targetPosition = userPositions.find(
+        (p) => p.positionMint.toString() === position.positionMint
+      );
+
+      if (!targetPosition) {
+        throw new Error("Position not found");
+      }
+
+      // Remove all liquidity from this position
+      const { txs, txCreateAccount, txCloseAccount } =
+        await dlmmService.removeMultipleLiquidity({
+          maxPositionList: [
+            {
+              position: targetPosition.position,
+              start: targetPosition.lowerBinId || 0,
+              end: targetPosition.upperBinId || 0,
+              positionMint: targetPosition.positionMint,
+            },
+          ],
+          payer: publicKey,
+          type: RemoveLiquidityType.Both,
+          pair: pairAddress,
+          tokenMintX: new PublicKey(position.tokenX),
+          tokenMintY: new PublicKey(position.tokenY),
+          activeId: pairInfo.activeId,
+        });
+
+      const allTxs: Transaction[] = [];
+      if (txCreateAccount) allTxs.push(txCreateAccount as Transaction);
+      allTxs.push(...(txs as Transaction[]));
+      if (txCloseAccount) allTxs.push(txCloseAccount as Transaction);
+
+      console.log(`📝 Executing ${allTxs.length} transactions...`);
+
+      // Execute transactions
+      for (let i = 0; i < allTxs.length; i++) {
+        const tx = allTxs[i];
+        const { blockhash } = await dlmmService.connection.getLatestBlockhash("confirmed");
+        tx.recentBlockhash = blockhash;
+        tx.feePayer = publicKey;
+
+        const signature = await sendTransaction(tx, dlmmService.connection, {
+          skipPreflight: false,
+          preflightCommitment: "confirmed",
+        });
+
+        console.log(`✅ Transaction ${i + 1}/${allTxs.length}:`, signature);
+        await dlmmService.connection.confirmTransaction(signature, "confirmed");
+      }
+
+      alert(`✅ Successfully removed liquidity!\n\nTokens have been returned to your wallet.`);
+
+      // Refresh positions
+      await fetchPositions();
+    } catch (err) {
+      console.error("❌ Error removing liquidity:", err);
+      alert(`❌ Failed to remove liquidity:\n${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setProcessingPosition(null);
+    }
+  };
+
+  // Claim accumulated fees
+  const handleClaimFees = async (position: DLMMPosition) => {
+    if (!publicKey || !sendTransaction) {
+      alert("Please connect your wallet");
+      return;
+    }
+
+    const totalFeesX = position.feesX / Math.pow(10, position.tokenXDecimals);
+    const totalFeesY = position.feesY / Math.pow(10, position.tokenYDecimals);
+
+    if (totalFeesX === 0 && totalFeesY === 0) {
+      alert("No fees to claim from this position.");
+      return;
+    }
+
+    const confirmed = confirm(
+      `Claim fees from position ${position.positionMint.slice(0, 8)}...?\n\n` +
+      `${getTokenSymbol(position.tokenX)}: ${totalFeesX.toFixed(6)}\n` +
+      `${getTokenSymbol(position.tokenY)}: ${totalFeesY.toFixed(6)}`
+    );
+
+    if (!confirmed) return;
+
+    setProcessingPosition(position.positionMint);
+
+    try {
+      console.log("💰 Claiming fees from position:", position.positionMint);
+
+      const pairAddress = new PublicKey(position.poolAddress);
+
+      // Get the user's position details
+      const userPositions = await dlmmService.getUserPositions({
+        payer: publicKey,
+        pair: pairAddress,
+      });
+
+      const targetPosition = userPositions.find(
+        (p) => p.positionMint.toString() === position.positionMint
+      );
+
+      if (!targetPosition) {
+        throw new Error("Position not found");
+      }
+
+      // Claim fees by removing 0% liquidity (just claims fees)
+      const { txs } = await dlmmService.removeMultipleLiquidity({
+        maxPositionList: [
+          {
+            position: targetPosition.position,
+            start: targetPosition.lowerBinId || 0,
+            end: targetPosition.upperBinId || 0,
+            positionMint: targetPosition.positionMint,
+          },
+        ],
+        payer: publicKey,
+        type: RemoveLiquidityType.Both,
+        pair: pairAddress,
+        tokenMintX: new PublicKey(position.tokenX),
+        tokenMintY: new PublicKey(position.tokenY),
+        activeId: (await dlmmService.getPairAccount(pairAddress))!.activeId,
+        bps: 0, // 0% = just claim fees without removing liquidity
+      });
+
+      console.log(`📝 Executing ${txs.length} fee claim transactions...`);
+
+      // Execute transactions
+      for (let i = 0; i < txs.length; i++) {
+        const tx = txs[i] as Transaction;
+        const { blockhash } = await dlmmService.connection.getLatestBlockhash("confirmed");
+        tx.recentBlockhash = blockhash;
+        tx.feePayer = publicKey;
+
+        const signature = await sendTransaction(tx, dlmmService.connection, {
+          skipPreflight: false,
+          preflightCommitment: "confirmed",
+        });
+
+        console.log(`✅ Fee claim transaction ${i + 1}/${txs.length}:`, signature);
+        await dlmmService.connection.confirmTransaction(signature, "confirmed");
+      }
+
+      alert(`✅ Successfully claimed fees!\n\nFees have been sent to your wallet.`);
+
+      // Refresh positions
+      await fetchPositions();
+    } catch (err) {
+      console.error("❌ Error claiming fees:", err);
+      alert(`❌ Failed to claim fees:\n${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setProcessingPosition(null);
     }
   };
 
@@ -445,15 +628,36 @@ export function PortfolioSection() {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm">
-                    View Details
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleClaimFees(position)}
+                    disabled={processingPosition === position.positionMint || (position.feesX === 0 && position.feesY === 0)}
+                  >
+                    {processingPosition === position.positionMint ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Claim Fees"
+                    )}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-red-600 hover:text-red-700"
+                    onClick={() => handleRemoveLiquidity(position)}
+                    disabled={processingPosition === position.positionMint}
                   >
-                    Remove Liquidity
+                    {processingPosition === position.positionMint ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Remove Liquidity"
+                    )}
                   </Button>
                 </div>
               </CardContent>

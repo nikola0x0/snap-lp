@@ -1,17 +1,24 @@
 /**
  * Supported DLMM pools on Saros Finance (Devnet)
- * For demo purposes, we focus on the main pool being used
- * TODO: Add more top pools by volume once identified
+ * These are active devnet pools for testing and demonstration
  */
 
 export const SUPPORTED_POOLS = [
   {
-    address: "H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ",
-    name: "PYUSD/WSOL",
-    description: "PayPal USD / Wrapped SOL - Primary demo pool",
+    address: "DMb8Xta7STwCkHwdWQSazjoJWG1vnNYkk2Pnenj9kPV",
+    name: "WSOL/USDT",
+    description: "Wrapped SOL / Tether USD",
   },
-  // Add more pools here as they're identified from the API
-  // Format: { address: "...", name: "TOKEN/TOKEN", description: "..." }
+  {
+    address: "3jPMRAaibizCW1nZhyyuSsDSy7beSP4yAfJZtxCBsYuD",
+    name: "TKN1/WSOL",
+    description: "Test Token 1 / Wrapped SOL",
+  },
+  {
+    address: "7zzwywSok1HLmpqd2SpctCUbDR6oV4RYZmmMPgNxWDs5",
+    name: "TKN2/WSOL",
+    description: "Test Token 2 / Wrapped SOL",
+  },
 ];
 
 /**
