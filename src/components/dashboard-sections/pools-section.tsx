@@ -83,7 +83,7 @@ export function PoolsSection() {
     Array<{ date: string; liquidity: number }>
   >([]);
   const [modalLoading, setModalLoading] = useState(false);
-  const { selectPool, setStep } = useAppStore();
+  const { selectPool, setStep, setPools: setAppPools } = useAppStore();
 
   const loadPools = useCallback(async () => {
     try {
@@ -208,6 +208,7 @@ export function PoolsSection() {
         ];
 
         setPools(demoPoolsWithMetrics);
+        setAppPools(demoPoolsWithMetrics); // Also save to global store for portfolio
         console.log(
           `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`,
         );
@@ -218,7 +219,7 @@ export function PoolsSection() {
     } finally {
       setLoading(false);
     }
-  }, []);;
+  }, [setAppPools]);;
 
   useEffect(() => {
     loadPools();

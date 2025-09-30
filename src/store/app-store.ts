@@ -24,6 +24,7 @@ interface AppState {
   // Flow state
   selectedPool: PoolData | null;
   selectedTemplate: StrategyTemplate | null;
+  pools: PoolData[]; // Available pools list
   currentStep:
     | "pools"
     | "templates"
@@ -34,6 +35,7 @@ interface AppState {
 
   // Actions
   selectPool: (pool: PoolData) => void;
+  setPools: (pools: PoolData[]) => void;
   selectTemplate: (template: StrategyTemplate) => void;
   setStep: (
     step:
@@ -56,9 +58,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Initial state
   selectedPool: null,
   selectedTemplate: null,
+  pools: [],
   currentStep: "pools",
 
   // Actions
+  setPools: (pools: PoolData[]) => set({ pools }),
   selectPool: (pool: PoolData) => {
     set({
       selectedPool: pool,
