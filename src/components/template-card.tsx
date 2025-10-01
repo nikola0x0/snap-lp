@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StrategyTemplate } from "@/types/strategy";
 import { useAppStore } from "@/store/app-store";
+import { SNAPScoreBadge } from "@/components/snap-score-gauge";
 // Risk level styling utilities
 const getRiskLevelColor = (riskLevel: string) => {
   switch (riskLevel) {
@@ -41,7 +42,47 @@ interface TemplateCardProps {
 
 export function TemplateCard({ template }: TemplateCardProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const { selectTemplate, selectedTemplate } = useAppStore();
+  const { selectTemplate, selectedTemplate, selectedPool } = useAppStore();
+  const [snapScore, setSnapScore] = useState<number | null>(null);
+  const [loadingScore, setLoadingScore] = useState(false);
+
+  // Fetch SNAP Score when pool is selected
+  useEffect(() => {
+    const fetchScore = async () => {
+      if (!selectedPool?.address) return;
+
+      setLoadingScore(true);
+      try {
+        const response = await fetch('/api/snap-score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templateId: template.id,
+            poolAddress: selectedPool.address,
+            templateConfig: {
+              name: template.name,
+              binRange: {
+                min: -Math.floor(template.binConfiguration.rangeWidth / 2),
+                max: Math.floor(template.binConfiguration.rangeWidth / 2),
+              },
+              riskLevel: template.riskLevel,
+            },
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success && data.score) {
+          setSnapScore(data.score.overall);
+        }
+      } catch (error) {
+        console.error('Failed to fetch SNAP Score:', error);
+      } finally {
+        setLoadingScore(false);
+      }
+    };
+
+    fetchScore();
+  }, [selectedPool?.address, template.id, template.name, template.binConfiguration.rangeWidth, template.riskLevel]);
 
   const getRiskIcon = (riskLevel: string) => {
     switch (riskLevel) {
@@ -71,7 +112,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
   return (
     <Card
       onClick={handleCardClick}
-      className={`cursor-pointer hover:shadow-lg transition-all border-2 ${
+      className={`cursor-pointer hover:shadow-lg transition-all border-2 h-full flex flex-col ${
         isSelected
           ? "border-primary bg-primary/5 ring-2 ring-primary/20"
           : "border-transparent hover:border-primary/30"
@@ -118,8 +159,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">{template.description}</p>
+      <CardContent className="space-y-4 flex-1 flex flex-col">
+        <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -157,6 +198,30 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </Badge>
           ))}
         </div>
+
+        {/* SNAP Score Badge - Bottom Section (Full Width) */}
+        {selectedPool && (
+          <div className="pt-3 pb-2 mt-auto">
+            {snapScore !== null && !loadingScore ? (
+              <div className="w-full">
+                <SNAPScoreBadge score={snapScore} />
+              </div>
+            ) : loadingScore ? (
+              <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
+                <span className="text-[9px] text-green-400 font-mono tracking-wider">LOADING...</span>
+                <div className="flex gap-[2px]">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div
+                      key={`loading-${i}`}
+                      className="w-[6px] h-[8px] bg-slate-800 animate-pulse"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="space-y-2 pt-2">
