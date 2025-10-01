@@ -6,6 +6,7 @@ import { PoolsSection } from "@/components/dashboard-sections/pools-section";
 import { TemplatesSection } from "@/components/dashboard-sections/templates-section";
 import { PortfolioSection } from "@/components/dashboard-sections/portfolio-section";
 import { DeploySection } from "@/components/dashboard-sections/deploy-section-simple";
+import { CreateSection } from "@/components/dashboard-sections/create-section";
 import { useAppStore } from "@/store/app-store";
 import { UnifiedSelectionBar } from "@/components/unified-selection-bar";
 import {
@@ -81,12 +82,7 @@ export default function Home() {
       case "portfolio":
         return <PortfolioSection />;
       case "create":
-        return (
-          <div className="p-8 text-center text-muted-foreground">
-            <strong>Strategy Builder</strong> - Create and monetize your own
-            strategies (Coming Soon)
-          </div>
-        );
+        return <CreateSection />;
       default:
         return <PoolsSection />;
     }
@@ -198,7 +194,7 @@ export default function Home() {
         {/* Footer */}
         <div className="p-4 border-t-2 border-cyan-500/30 bg-[#0a0a0a]">
           <div className="text-[9px] text-zinc-500 font-mono tracking-wider uppercase text-center space-y-1">
-            <div>DLMM STRATEGY PLATFORM</div>
+            <div>DLMM STRATEGY PLATFORM by nikola0x0</div>
             <div>POWERED BY SAROS DLMM</div>
           </div>
         </div>

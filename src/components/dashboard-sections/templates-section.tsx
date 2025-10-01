@@ -24,9 +24,12 @@ export function TemplatesSection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const { selectedPool, setStep, getTokenPairSymbol } = useAppStore();
+  const { selectedPool, setStep, getTokenPairSymbol, customTemplates } = useAppStore();
 
-  const filteredTemplates = STRATEGY_TEMPLATES.filter((template) => {
+  // Combine built-in and custom templates
+  const allTemplates = [...STRATEGY_TEMPLATES, ...customTemplates];
+
+  const filteredTemplates = allTemplates.filter((template) => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,8 +44,8 @@ export function TemplatesSection() {
   });
 
   const getFilterStats = (filter: FilterType) => {
-    if (filter === "all") return STRATEGY_TEMPLATES.length;
-    return STRATEGY_TEMPLATES.filter((t) => t.riskLevel === filter).length;
+    if (filter === "all") return allTemplates.length;
+    return allTemplates.filter((t) => t.riskLevel === filter).length;
   };
 
   const getFilterIcon = (filter: FilterType) => {
@@ -187,7 +190,7 @@ export function TemplatesSection() {
         {/* Results Summary */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
-            SHOWING {filteredTemplates.length} OF {STRATEGY_TEMPLATES.length}{" "}
+            SHOWING {filteredTemplates.length} OF {allTemplates.length}{" "}
             TEMPLATES
           </div>
           {searchTerm && (

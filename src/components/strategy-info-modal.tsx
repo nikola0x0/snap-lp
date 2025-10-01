@@ -233,6 +233,12 @@ export function StrategyInfoModal({ isOpen, onClose }: StrategyInfoModalProps) {
                           Earn reputation and rewards for popular templates
                         </p>
                       </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-cyan-400 font-mono text-xs">▸</span>
+                        <p className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
+                          <span className="text-cyan-400">Advanced Features:</span> Auto stop-loss, take profit, and DCA
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
