@@ -18,6 +18,37 @@ export const metadata: Metadata = {
   title: "SnapLP - DLMM Strategy Templates",
   description:
     "Simplified DLMM liquidity provision with pre-configured strategy templates",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  openGraph: {
+    title: "SnapLP - DLMM Strategy Templates",
+    description: "Simplified DLMM liquidity provision with pre-configured strategy templates",
+    url: "https://snaplp.vercel.app",
+    siteName: "SnapLP",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SnapLP - DLMM Strategy Templates",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SnapLP - DLMM Strategy Templates",
+    description: "Simplified DLMM liquidity provision with pre-configured strategy templates",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
