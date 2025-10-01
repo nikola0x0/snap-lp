@@ -32,7 +32,7 @@ export function TemplatesSection() {
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase()),
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     const matchesFilter =
@@ -81,31 +81,6 @@ export function TemplatesSection() {
 
   return (
     <div className="relative space-y-6">
-      {/* Pool Context Header */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  Selected Pool
-                </div>
-                <div className="font-semibold text-lg">
-                  {getTokenPairSymbol()}
-                </div>
-              </div>
-            </div>
-            <Button onClick={() => setStep("pools")} variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Change Pool
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -113,8 +88,8 @@ export function TemplatesSection() {
               Step 2: Choose Strategy
             </h1>
             <p className="text-muted-foreground">
-              Select a strategy template optimized for {getTokenPairSymbol()}. These
-              templates are created by expert traders and the community.
+              Select a strategy template optimized for {getTokenPairSymbol()}.
+              These templates are created by expert traders and the community.
             </p>
           </div>
           <Button
