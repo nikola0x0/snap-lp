@@ -9,6 +9,8 @@ import { Badge } from "../ui/badge";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { ClientOnly } from "../client-only";
 import { useAppStore } from "@/store/app-store";
+import { TerminalHeader } from "../terminal-header";
+import { ConsoleLoading } from "../console-loading";
 import {
   LiquidityBookServices,
   MODE,
@@ -442,162 +444,157 @@ export function PortfolioSection() {
 
   if (!connected) {
     return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-          <p className="text-muted-foreground">
-            View and manage your active DLMM positions and track performance.
-          </p>
-        </div>
+      <div className="space-y-4">
+        <TerminalHeader
+          title="PORTFOLIO"
+          subtitle="TRACK YOUR DLMM POSITIONS • MONITOR PERFORMANCE"
+        />
 
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="space-y-4">
-              <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Connect Your Wallet</h3>
-                <p className="text-muted-foreground">
-                  Connect your wallet to view your DLMM positions and portfolio
-                  performance.
-                </p>
-              </div>
-              <ClientOnly
-                fallback={
-                  <div className="h-9 w-32 bg-muted animate-pulse rounded-md mx-auto" />
-                }
-              >
-                <WalletMultiButton className="mx-auto" />
-              </ClientOnly>
+        <div className="bg-zinc-950 border-2 border-zinc-800 p-12 text-center">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto border-2 border-amber-500 bg-amber-500/10 flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-amber-400" />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <h3 className="text-lg font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2">
+                WALLET NOT CONNECTED
+              </h3>
+              <p className="text-zinc-400 font-mono text-sm">
+                CONNECT WALLET TO VIEW POSITIONS AND PERFORMANCE DATA
+              </p>
+            </div>
+            <ClientOnly
+              fallback={
+                <div className="h-10 w-40 bg-zinc-800 animate-pulse mx-auto border-2 border-zinc-700" />
+              }
+            >
+              <WalletMultiButton className="mx-auto" />
+            </ClientOnly>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-          <p className="text-muted-foreground">
-            {publicKey?.toBase58().slice(0, 4)}...
-            {publicKey?.toBase58().slice(-4)}
-          </p>
+    <div className="space-y-4">
+      <TerminalHeader
+        title="PORTFOLIO"
+        subtitle={`WALLET: ${publicKey?.toBase58().slice(0, 4)}...${publicKey?.toBase58().slice(-4)} • ${totalPositions} POSITIONS`}
+      />
+
+      <div className="bg-zinc-950 border-2 border-zinc-800 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
+            SYSTEM OVERVIEW
+          </div>
+          <button
+            type="button"
+            onClick={fetchPositions}
+            disabled={loading}
+            className="px-3 py-1.5 border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-xs font-mono font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-3 h-3 inline mr-2 animate-spin" />
+                LOADING...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-3 h-3 inline mr-2" />
+                REFRESH
+              </>
+            )}
+          </button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchPositions}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4 mr-2" />
-          )}
-          Refresh
-        </Button>
-      </div>
 
-      {/* Portfolio Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-4 h-4 bg-blue-500 rounded-full"></span>
-              <span className="text-sm text-muted-foreground">
-                Total Positions
-              </span>
+        {/* Portfolio Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          {/* Total Positions */}
+          <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+            <div className="text-[9px] text-cyan-400 font-mono tracking-wider uppercase mb-1">
+              TOTAL POSITIONS
             </div>
-            <div className="text-2xl font-bold">{totalPositions}</div>
-          </CardContent>
-        </Card>
+            <div className="text-2xl font-mono font-bold text-white">
+              {totalPositions}
+            </div>
+          </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-muted-foreground">In Range</span>
+          {/* In Range */}
+          <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <TrendingUp className="w-3 h-3 text-green-400" />
+              <div className="text-[9px] text-green-400 font-mono tracking-wider uppercase">
+                IN RANGE
+              </div>
             </div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-mono font-bold text-green-400">
               {activePositions}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
-              <span className="text-sm text-muted-foreground">
-                Out of Range
-              </span>
+          {/* Out of Range */}
+          <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <AlertTriangle className="w-3 h-3 text-amber-400" />
+              <div className="text-[9px] text-amber-400 font-mono tracking-wider uppercase">
+                OUT OF RANGE
+              </div>
             </div>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-mono font-bold text-amber-400">
               {totalPositions - activePositions}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Percent className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm text-muted-foreground">
-                Pools Tracked
+          {/* Pools Tracked */}
+          <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <Percent className="w-3 h-3 text-cyan-400" />
+              <div className="text-[9px] text-cyan-400 font-mono tracking-wider uppercase">
+                POOLS TRACKED
+              </div>
+            </div>
+            <div className="text-2xl font-mono font-bold text-white">
+              {poolsCount}
+            </div>
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="border-2 border-red-500 bg-red-500/10 p-4 mb-4">
+            <div className="flex items-center gap-2 text-red-400">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="font-mono text-sm uppercase tracking-wider">
+                {error}
               </span>
             </div>
-            <div className="text-2xl font-bold">{poolsCount}</div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        )}
 
-      {/* Error State */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="w-4 h-4" />
-              <span className="font-medium">{error}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* Loading State */}
+        {loading && <ConsoleLoading message="LOADING POSITIONS..." />}
 
-      {/* Loading State */}
-      {loading && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-blue-500" />
-            <p className="text-muted-foreground">Loading positions...</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Positions List */}
-      {!loading && positions.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No Positions Found</h3>
-            <p className="text-muted-foreground">
-              You don't have any active DLMM positions yet. Create your first
-              position by deploying a strategy!
+        {/* Positions List */}
+        {!loading && positions.length === 0 && (
+          <div className="p-12 text-center">
+            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
+            <h3 className="text-lg font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2">
+              NO POSITIONS FOUND
+            </h3>
+            <p className="text-zinc-400 font-mono text-sm">
+              CREATE YOUR FIRST POSITION BY DEPLOYING A STRATEGY
             </p>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {!loading && positions.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">
-            Active Positions ({positions.length})
-          </h2>
+        {!loading && positions.length > 0 && (
+          <div className="space-y-3">
+            <div className="text-xs font-mono text-cyan-400 uppercase tracking-wider mb-3">
+              ACTIVE POSITIONS • {positions.length} TOTAL
+            </div>
 
-          {positions.map((position) => (
+            {positions.map((position) => (
             <Card key={position.positionMint}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -744,9 +741,10 @@ export function PortfolioSection() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

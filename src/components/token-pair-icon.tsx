@@ -13,8 +13,8 @@ interface TokenPairIconProps {
 const TOKEN_IMAGES: Record<string, string> = {
   SOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
   WSOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-  PYUSD: "https://s2.coinmarketcap.com/static/img/coins/64x64/27772.png",
-  USDT: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
+  PYUSD: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM/logo.png",
+  USDT: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.png",
   USDC: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
 };
 

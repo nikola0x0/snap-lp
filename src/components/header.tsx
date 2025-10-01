@@ -18,9 +18,9 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
 
   return (
     <>
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-        <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+      <header className="border-b-2 border-cyan-500/30 bg-zinc-950 sticky top-0 z-40 overflow-hidden">
+        <div className="flex h-16 items-center justify-between px-4 relative">
+          <div className="flex items-center gap-3">
             {/* Mobile menu button */}
             {onMobileMenuToggle && (
               <Button
@@ -33,30 +33,47 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
               </Button>
             )}
 
-            <div>
-              <h1 className="text-xl font-bold">SnapLP</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">
-                DLMM Strategy Platform
-              </p>
+            {/* Mascot with gradient fade */}
+            <div className="relative w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 -mt-7 -mb-9 sm:-mt-13 sm:-mb-11 lg:-mt-18 lg:-mb-22 -ml-5 sm:-ml-9 lg:-ml-[3.25rem] flex-shrink-0 z-0">
+              <div
+                className="absolute inset-0"
+                style={{
+                  maskImage:
+                    "radial-gradient(ellipse at center, black 60%, transparent 90%)",
+                  WebkitMaskImage:
+                    "radial-gradient(ellipse at center, black 60%, transparent 90%)",
+                }}
+              >
+                <img
+                  src="/assets/mascot.png"
+                  alt="SnapLP Mascot"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1 -ml-4 relative z-10">
+              <img
+                src="/assets/logo.svg"
+                alt="SnapLP"
+                className="h-14 w-auto"
+              />
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className="hidden md:flex items-center rounded-sm gap-2 px-3 h-12 bg-green-500/10 border-green-500/30 text-green-700"
-            >
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Devnet
-            </Badge>
-            <Button
-              variant="outline"
+            <div className="hidden md:flex items-center gap-2 px-3 h-10 bg-green-500/10 border-2 border-green-500/50 font-mono text-xs uppercase tracking-wider text-green-400">
+              <div className="w-2 h-2 bg-green-400 animate-pulse" />
+              DEVNET
+            </div>
+            <button
+              type="button"
               onClick={() => setSwapModalOpen(true)}
-              className="gap-2 h-12 rounded-sm"
+              className="px-3 h-10 border-2 border-cyan-500/50 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-all font-mono text-xs uppercase tracking-wider flex items-center gap-2"
             >
               <ArrowUpDown className="w-4 h-4" />
-              <span className="hidden sm:inline">Swap</span>
-            </Button>
+              <span className="hidden sm:inline">SWAP</span>
+            </button>
             <WalletConnection />
           </div>
         </div>

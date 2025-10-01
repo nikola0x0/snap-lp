@@ -1,8 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/store/app-store";
 import { TrendingUp, Zap, Plus, ChevronRight } from "lucide-react";
 import { StrategySimulator } from "./strategy-simulator";
@@ -52,14 +49,20 @@ export function UnifiedSelectionBar() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 lg:pl-[calc(16rem+1rem)] bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
-        <Card className="bg-gradient-to-r from-slate-800 to-slate-900 border-slate-700 shadow-2xl pointer-events-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 lg:pl-[calc(16rem+1rem)] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a] to-transparent pointer-events-none">
+        <div className="bg-zinc-950 border-2 border-cyan-500/30 shadow-[0_0_40px_rgba(34,211,238,0.2)] pointer-events-auto">
+          <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent px-4 py-2">
+            <div className="text-cyan-400 font-mono text-[10px] tracking-[0.2em] uppercase">
+              /// EQUIP STRATEGY
+            </div>
+          </div>
+
           <div className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               {/* Left side - Equipment Slots */}
               <div className="flex items-center gap-3 flex-1">
                 {/* Pool Slot */}
-                <div className="relative p-4 rounded-lg border-2 flex-1 min-w-0 bg-blue-500/20 border-blue-500 shadow-lg shadow-blue-500/50">
+                <div className="relative p-3 border-2 flex-1 min-w-0 bg-[#0a0a0a] border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
                   {selectedPool ? (
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
@@ -76,33 +79,33 @@ export function UnifiedSelectionBar() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider mb-1">
-                          Liquidity Pool
+                        <div className="text-[9px] text-cyan-400 uppercase font-mono tracking-wider mb-1">
+                          LIQUIDITY POOL
                         </div>
-                        <div className="font-bold text-base text-white mb-1">
+                        <div className="font-bold text-sm font-mono text-white mb-1">
                           {getTokenPairSymbol()}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-blue-200">
-                          <span>DLMM Pool</span>
-                          <span className="w-1 h-1 rounded-full bg-blue-400" />
-                          <span>Active</span>
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-green-400">
+                          <span>DLMM</span>
+                          <span className="w-1 h-1 bg-green-400" />
+                          <span>ACTIVE</span>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Plus className="w-7 h-7 text-slate-500" />
+                      <div className="w-12 h-12 bg-zinc-900 border-2 border-zinc-800 flex items-center justify-center flex-shrink-0">
+                        <Plus className="w-6 h-6 text-zinc-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider mb-1">
-                          Liquidity Pool
+                        <div className="text-[9px] text-zinc-500 uppercase font-mono tracking-wider mb-1">
+                          LIQUIDITY POOL
                         </div>
-                        <div className="font-bold text-base text-slate-400 mb-1">
-                          No Pool Selected
+                        <div className="font-bold text-sm font-mono text-zinc-600 mb-1">
+                          NO POOL SELECTED
                         </div>
-                        <div className="text-xs text-slate-500">
-                          Select a pool to get started
+                        <div className="text-[10px] font-mono text-zinc-700">
+                          SELECT POOL TO START
                         </div>
                       </div>
                     </div>
@@ -110,27 +113,27 @@ export function UnifiedSelectionBar() {
                 </div>
 
                 {/* Plus connector */}
-                <Plus className="w-6 h-6 text-slate-500 flex-shrink-0" />
+                <Plus className="w-5 h-5 text-cyan-500/50 flex-shrink-0" />
 
                 {/* Strategy Slot */}
-                <div className="relative p-4 rounded-lg border-2 flex-1 min-w-0 bg-purple-500/20 border-purple-500 shadow-lg shadow-purple-500/50">
+                <div className="relative p-3 border-2 flex-1 min-w-0 bg-[#0a0a0a] border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
                   {selectedTemplate ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <Zap className="w-7 h-7 text-white" />
+                      <div className="w-12 h-12 bg-cyan-500/20 border-2 border-cyan-500 flex items-center justify-center flex-shrink-0">
+                        <Zap className="w-6 h-6 text-cyan-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-purple-300 uppercase font-semibold tracking-wider mb-1">
-                          Strategy Template
+                        <div className="text-[9px] text-cyan-400 uppercase font-mono tracking-wider mb-1">
+                          STRATEGY TEMPLATE
                         </div>
-                        <div className="font-bold text-base text-white mb-1 truncate">
+                        <div className="font-bold text-sm font-mono text-white mb-1 truncate">
                           {selectedTemplate.name}
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge className="text-[10px] px-2 py-0.5 bg-purple-600/50 text-white border-purple-400">
+                          <span className="text-[10px] px-2 py-0.5 border border-zinc-700 bg-zinc-900 text-zinc-400 font-mono uppercase">
                             {selectedTemplate.riskLevel}
-                          </Badge>
-                          <span className="text-xs text-purple-200">
+                          </span>
+                          <span className="text-[10px] font-mono text-green-400">
                             APR: {selectedTemplate.estimatedAPR}%
                           </span>
                         </div>
@@ -138,18 +141,18 @@ export function UnifiedSelectionBar() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Plus className="w-7 h-7 text-slate-500" />
+                      <div className="w-12 h-12 bg-zinc-900 border-2 border-zinc-800 flex items-center justify-center flex-shrink-0">
+                        <Plus className="w-6 h-6 text-zinc-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider mb-1">
-                          Strategy Template
+                        <div className="text-[9px] text-zinc-500 uppercase font-mono tracking-wider mb-1">
+                          STRATEGY TEMPLATE
                         </div>
-                        <div className="font-bold text-base text-slate-400 mb-1">
-                          No Strategy Selected
+                        <div className="font-bold text-sm font-mono text-zinc-600 mb-1">
+                          NO STRATEGY SELECTED
                         </div>
-                        <div className="text-xs text-slate-500">
-                          Equip a strategy template
+                        <div className="text-[10px] font-mono text-zinc-700">
+                          EQUIP STRATEGY
                         </div>
                       </div>
                     </div>
@@ -161,42 +164,41 @@ export function UnifiedSelectionBar() {
               <div className="flex items-center gap-2">
                 {/* Pool selected but no strategy */}
                 {selectedPool && !selectedTemplate && (
-                  <Button
+                  <button
+                    type="button"
                     onClick={() => setStep("templates")}
-                    size="lg"
-                    className="gap-2 bg-purple-600 hover:bg-purple-700"
+                    className="px-4 py-2 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 font-mono text-sm font-bold uppercase tracking-wider hover:bg-cyan-500/20 transition-all flex items-center gap-2"
                   >
-                    Equip Strategy
+                    EQUIP STRATEGY
                     <ChevronRight className="w-4 h-4" />
-                  </Button>
+                  </button>
                 )}
 
                 {/* Both selected - show simulate and deploy */}
                 {selectedPool && selectedTemplate && (
                   <>
-                    <Button
+                    <button
+                      type="button"
                       onClick={() => setShowSimulator(true)}
-                      variant="outline"
-                      size="lg"
-                      className="gap-2 border-slate-600 bg-slate-700/50 text-white hover:bg-slate-600 hover:text-white"
+                      className="px-4 py-2 border-2 border-zinc-700 bg-zinc-900 text-white font-mono text-sm font-bold uppercase tracking-wider hover:border-cyan-500/50 hover:bg-zinc-800 transition-all flex items-center gap-2"
                     >
                       <TrendingUp className="w-4 h-4" />
-                      Test Build
-                    </Button>
-                    <Button
+                      TEST BUILD
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setStep("deploy")}
-                      size="lg"
-                      className="gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/50"
+                      className="px-4 py-2 border-2 border-green-500 bg-green-500/10 text-green-400 font-mono text-sm font-bold uppercase tracking-wider hover:bg-green-500/20 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-2"
                     >
                       <Zap className="w-4 h-4" />
-                      Deploy
-                    </Button>
+                      DEPLOY
+                    </button>
                   </>
                 )}
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       {showSimulator && selectedTemplate && (

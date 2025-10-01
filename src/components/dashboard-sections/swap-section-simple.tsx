@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { ClientOnly } from "@/components/client-only";
-import { ArrowDownUp, Loader2, Wallet, ChevronDown } from "lucide-react";
+import { ArrowDownUp, Loader2, Wallet } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import {
   Select,
@@ -325,23 +324,32 @@ export function SwapSectionSimple() {
 
   if (!connected) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-6">
-        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-          <Wallet className="w-10 h-10 text-white" />
+      <div className="border-2 border-cyan-500/30 bg-zinc-950">
+        <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+          <h2 className="text-cyan-400 font-mono text-sm uppercase tracking-wider">
+            {"/// TOKEN SWAP"}
+          </h2>
         </div>
-        <div className="text-center space-y-2">
-          <h3 className="text-xl font-bold">Connect Wallet</h3>
-          <p className="text-muted-foreground max-w-sm">
-            Connect your Solana wallet to start swapping tokens
-          </p>
+        <div className="p-8 text-center space-y-6">
+          <div className="w-16 h-16 border-2 border-red-500 bg-red-500/10 mx-auto flex items-center justify-center">
+            <Wallet className="w-8 h-8 text-red-400" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold font-mono text-white uppercase">
+              WALLET NOT CONNECTED
+            </h3>
+            <p className="text-xs font-mono text-zinc-400 max-w-sm mx-auto uppercase">
+              Connect your wallet to start swapping tokens
+            </p>
+          </div>
+          <ClientOnly
+            fallback={
+              <div className="h-10 w-32 bg-zinc-800 animate-pulse mx-auto" />
+            }
+          >
+            <WalletMultiButton />
+          </ClientOnly>
         </div>
-        <ClientOnly
-          fallback={
-            <div className="h-10 w-32 bg-muted animate-pulse rounded-md" />
-          }
-        >
-          <WalletMultiButton />
-        </ClientOnly>
       </div>
     );
   }
@@ -353,155 +361,160 @@ export function SwapSectionSimple() {
   return (
     <>
       <ToastContainer />
-      <div className="space-y-6 max-w-xl mx-auto">
-        <div className="text-center space-y-2 mb-8">
-          <h2 className="text-2xl font-bold">Swap Tokens</h2>
-          <p className="text-sm text-muted-foreground">
+      <div className="border-2 border-cyan-500/30 bg-zinc-950">
+        <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+          <h2 className="text-cyan-400 font-mono text-sm uppercase tracking-wider">
+            {"/// TOKEN SWAP"}
+          </h2>
+          <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mt-1">
             Swap tokens using Saros DLMM pools
           </p>
         </div>
 
-        {/* Pool Selector */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Select Pool</label>
-          <Select value={selectedPoolId} onValueChange={setSelectedPoolId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a pool" />
-            </SelectTrigger>
-            <SelectContent>
-              {SWAP_POOLS.map((pool) => (
-                <SelectItem key={pool.id} value={pool.id}>
-                  {pool.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* From Token */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">You pay</span>
-            <span className="text-muted-foreground">
-              Balance: {balance.toFixed(fromToken.decimals === 9 ? 4 : 2)}
-            </span>
+        <div className="p-6 space-y-4 max-w-2xl mx-auto">
+          {/* Pool Selector */}
+          <div className="space-y-2">
+            <label htmlFor="pool-selector" className="text-[10px] font-mono uppercase tracking-wider text-cyan-400">
+              SELECT POOL
+            </label>
+            <Select value={selectedPoolId} onValueChange={setSelectedPoolId}>
+              <SelectTrigger id="pool-selector" className="bg-[#0a0a0a] border-2 border-zinc-800 h-12 font-mono">
+                <SelectValue placeholder="Select a pool" />
+              </SelectTrigger>
+              <SelectContent>
+                {SWAP_POOLS.map((pool) => (
+                  <SelectItem key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
-              <div className="flex items-center gap-3">
-                <img
-                  src={TOKEN_IMAGES[fromToken.symbol]}
-                  alt={fromToken.symbol}
-                  className="w-10 h-10 rounded-full border-2 border-background"
-                />
-                <div>
-                  <div className="font-semibold">{fromToken.symbol}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {fromToken.name}
+
+          {/* From Token */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+              <span className="text-cyan-400">YOU PAY</span>
+              <span className="text-zinc-500">
+                BALANCE: {balance.toFixed(fromToken.decimals === 9 ? 4 : 2)}
+              </span>
+            </div>
+            <div className="relative bg-[#0a0a0a] border-2 border-zinc-800">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={TOKEN_IMAGES[fromToken.symbol]}
+                    alt={fromToken.symbol}
+                    className="w-10 h-10 border-2 border-zinc-800"
+                  />
+                  <div>
+                    <div className="font-bold font-mono text-white">{fromToken.symbol}</div>
+                    <div className="text-[9px] font-mono text-zinc-500">
+                      {fromToken.name}
+                    </div>
                   </div>
                 </div>
               </div>
+              <Input
+                type="number"
+                value={fromAmount}
+                onChange={(e) => setFromAmount(e.target.value)}
+                placeholder="0.00"
+                className="h-24 pl-36 pr-20 text-right text-3xl font-bold font-mono bg-transparent border-0 focus-visible:ring-0"
+                min="0"
+                step={fromToken.decimals === 6 ? "0.01" : "0.0001"}
+              />
+              <button
+                type="button"
+                onClick={() => setFromAmount(balance.toString())}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] h-7 px-2 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 font-mono uppercase tracking-wider"
+              >
+                MAX
+              </button>
             </div>
-            <Input
-              type="number"
-              value={fromAmount}
-              onChange={(e) => setFromAmount(e.target.value)}
-              placeholder="0.00"
-              className="h-24 pl-36 pr-20 text-right text-3xl font-bold"
-              min="0"
-              step={fromToken.decimals === 6 ? "0.01" : "0.0001"}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setFromAmount(balance.toString())}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs h-7"
+          </div>
+
+          {/* Flip Button */}
+          <div className="flex justify-center -my-2">
+            <button
+              type="button"
+              onClick={handleFlip}
+              disabled={loading}
+              className="h-12 w-12 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 disabled:opacity-50 transition-all flex items-center justify-center"
             >
-              MAX
-            </Button>
+              <ArrowDownUp className="w-5 h-5" />
+            </button>
           </div>
-        </div>
 
-        {/* Flip Button */}
-        <div className="flex justify-center -my-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleFlip}
-            disabled={loading}
-            className="h-12 w-12 rounded-full border-2 hover:bg-primary hover:text-primary-foreground transition-all"
-          >
-            <ArrowDownUp className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* To Token */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">You receive</span>
-            {toAmount && (
-              <span className="text-muted-foreground">≈ ${toAmount}</span>
-            )}
-          </div>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
-              <div className="flex items-center gap-3">
-                <img
-                  src={TOKEN_IMAGES[toToken.symbol]}
-                  alt={toToken.symbol}
-                  className="w-10 h-10 rounded-full border-2 border-background"
-                />
-                <div>
-                  <div className="font-semibold">{toToken.symbol}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {toToken.name}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="h-24 pl-36 pr-4 flex items-center justify-end border rounded-lg bg-muted/30">
-              {quoting ? (
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              ) : (
-                <span className="text-3xl font-bold">{toAmount || "0.00"}</span>
+          {/* To Token */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+              <span className="text-cyan-400">YOU RECEIVE</span>
+              {toAmount && (
+                <span className="text-zinc-500">≈ ${toAmount}</span>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Rate Info */}
-        {fromAmount && toAmount && (
-          <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-            <span>Rate</span>
-            <span className="font-medium">
-              1 {fromToken.symbol} ≈{" "}
-              {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(4)}{" "}
-              {toToken.symbol}
-            </span>
-          </div>
-        )}
-
-        {/* Swap Button */}
-        <Button
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          onClick={handleSwap}
-          disabled={
-            loading || quoting || !fromAmount || parseFloat(fromAmount) <= 0
-          }
-        >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Swapping...
+            <div className="relative bg-[#0a0a0a] border-2 border-zinc-800">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={TOKEN_IMAGES[toToken.symbol]}
+                    alt={toToken.symbol}
+                    className="w-10 h-10 border-2 border-zinc-800"
+                  />
+                  <div>
+                    <div className="font-bold font-mono text-white">{toToken.symbol}</div>
+                    <div className="text-[9px] font-mono text-zinc-500">
+                      {toToken.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-24 pl-36 pr-4 flex items-center justify-end">
+                {quoting ? (
+                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+                ) : (
+                  <span className="text-3xl font-bold font-mono text-white">{toAmount || "0.00"}</span>
+                )}
+              </div>
             </div>
-          ) : (
-            `Swap ${fromToken.symbol}`
-          )}
-        </Button>
+          </div>
 
-        {/* Fee Info */}
-        <div className="text-center text-xs text-muted-foreground">
-          Slippage: 0.5% • Powered by Saros DLMM
+          {/* Rate Info */}
+          {fromAmount && toAmount && (
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+              <span className="text-zinc-500">RATE</span>
+              <span className="font-bold text-white">
+                1 {fromToken.symbol} ≈{" "}
+                {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(4)}{" "}
+                {toToken.symbol}
+              </span>
+            </div>
+          )}
+
+          {/* Swap Button */}
+          <button
+            type="button"
+            onClick={handleSwap}
+            disabled={
+              loading || quoting || !fromAmount || parseFloat(fromAmount) <= 0
+            }
+            className="w-full h-14 border-2 border-green-500 bg-green-500/10 text-green-400 hover:bg-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                SWAPPING...
+              </>
+            ) : (
+              `SWAP ${fromToken.symbol}`
+            )}
+          </button>
+
+          {/* Fee Info */}
+          <div className="text-center text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+            Slippage: 0.5% • Powered by Saros DLMM
+          </div>
         </div>
       </div>
     </>

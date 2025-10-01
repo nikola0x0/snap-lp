@@ -5,7 +5,6 @@ import { realDlmmService } from "@/services/dlmm-real";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -26,16 +25,10 @@ import {
 } from "recharts";
 import { useAppStore } from "@/store/app-store";
 import { SUPPORTED_POOLS } from "@/constants/supported-pools";
-import { TokenPairIcon } from "@/components/token-pair-icon";
-import {
-  Search,
-  Loader2,
-  ChevronRight,
-  BarChart3,
-  ArrowUpDown,
-  Eye,
-  CheckCircle2,
-} from "lucide-react";
+import { TerminalHeader } from "@/components/terminal-header";
+import { ConsoleLoading } from "@/components/console-loading";
+import { PoolCard } from "@/components/pool-card";
+import { Search, Loader2, ChevronRight, ArrowUpDown, BarChart3 } from "lucide-react";
 
 interface PoolMetrics {
   address: string;
@@ -404,22 +397,15 @@ export function PoolsSection() {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Available Pools
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12">
-            <div className="flex items-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Loading comprehensive pool data...</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <TerminalHeader
+          title="LIQUIDITY POOLS"
+          subtitle="LOADING POOL DATA..."
+        />
+        <div className="bg-zinc-950 border-2 border-zinc-800">
+          <ConsoleLoading message="LOADING POOL DATA..." />
+        </div>
+      </div>
     );
   }
 
@@ -446,138 +432,70 @@ export function PoolsSection() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Available Pools ({filteredPools.length})
-            </CardTitle>
+      <TerminalHeader
+        title="LIQUIDITY POOLS"
+        subtitle={`SELECT TARGET POOL • ${filteredPools.length} AVAILABLE`}
+      />
 
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search pools..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-48"
-                />
-              </div>
-              <Button onClick={loadPools} variant="outline" size="sm">
-                Refresh
-              </Button>
+      <div className="bg-zinc-950 border-2 border-zinc-800 p-4">
+        {/* Search and Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Search pools..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-48 bg-[#0a0a0a] border-zinc-700 text-white"
+              />
             </div>
+            <Button
+              onClick={loadPools}
+              variant="outline"
+              size="sm"
+              className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+            >
+              Refresh
+            </Button>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="p-4">
-          {/* Sort Controls */}
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
-            <SortButton label="Pool Name" sortKey="name" />
-            <SortButton label="Liquidity" sortKey="liquidity" />
-            <SortButton label="24H Volume" sortKey="volume24h" />
-            <SortButton label="APR" sortKey="apr" />
+        {/* Sort Controls */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <span className="text-xs text-zinc-500 font-mono tracking-wider uppercase">Sort by:</span>
+          <SortButton label="Pool Name" sortKey="name" />
+          <SortButton label="Liquidity" sortKey="liquidity" />
+          <SortButton label="24H Volume" sortKey="volume24h" />
+          <SortButton label="APR" sortKey="apr" />
+        </div>
+
+        {/* Pool Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPools.map((pool) => {
+            const isSelected =
+              currentlySelectedPool?.address === pool.address;
+            return (
+              <PoolCard
+                key={pool.address}
+                pool={pool}
+                isSelected={isSelected}
+                onClick={() => handleSelectPool(pool)}
+                onViewDetails={() => openPoolDetails(pool)}
+              />
+            );
+          })}
+        </div>
+
+        {filteredPools.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-zinc-500 font-mono text-sm">
+              NO POOLS MATCH YOUR SEARCH CRITERIA
+            </p>
           </div>
-
-          {/* Pool Cards */}
-          <div className="space-y-3">
-            {filteredPools.map((pool) => {
-              const isSelected =
-                currentlySelectedPool?.address === pool.address;
-              return (
-                <Card
-                  key={pool.address}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    isSelected
-                      ? "border-2 border-blue-500 bg-blue-50/50"
-                      : "border-2 border-transparent"
-                  }`}
-                  onClick={() => handleSelectPool(pool)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      {/* Pool Name & Icon */}
-                      <div className="flex items-center gap-3 flex-1">
-                        <TokenPairIcon
-                          tokenA={{ symbol: pool.name.split("/")[0] }}
-                          tokenB={{ symbol: pool.name.split("/")[1] }}
-                          size="md"
-                        />
-                        <div>
-                          <div className="font-semibold text-lg flex items-center gap-2">
-                            {pool.name}
-                            {isSelected && (
-                              <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Active Bin #{pool.activeBin}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Metrics */}
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">Liquidity</div>
-                          <div className="font-semibold">
-                            {formatCurrency(pool.liquidity)}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">
-                            24H Volume
-                          </div>
-                          <div className="font-semibold">
-                            {formatCurrency(pool.volume24h)}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">APR</div>
-                          <div className="font-semibold text-green-600">
-                            {pool.apr.toFixed(1)}%
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">Fee</div>
-                          <Badge variant="outline" className="text-xs">
-                            {pool.feeRate}%
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openPoolDetails(pool);
-                          }}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {filteredPools.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">
-                No pools match your search criteria
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Pool Details Modal */}
       <Dialog open={!!selectedPool} onOpenChange={() => setSelectedPool(null)}>
@@ -585,9 +503,24 @@ export function PoolsSection() {
           {selectedPool && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {selectedPool.name.split("/")[0][0]}
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="flex items-center -space-x-2">
+                    <img
+                      src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.baseToken?.mint}/logo.png`}
+                      alt={selectedPool.originalPool?.baseToken?.symbol || ""}
+                      className="w-8 h-8 border-2 border-background relative z-10"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
+                      }}
+                    />
+                    <img
+                      src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.quoteToken?.mint}/logo.png`}
+                      alt={selectedPool.originalPool?.quoteToken?.symbol || ""}
+                      className="w-8 h-8 border-2 border-background"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
+                      }}
+                    />
                   </div>
                   {selectedPool.name} Pool Details
                 </DialogTitle>
@@ -603,38 +536,58 @@ export function PoolsSection() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Pool Tokens</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <div className="text-2xl font-bold">
-                          {selectedPool.originalPool?.baseToken?.symbol ||
-                            "TOKEN"}
-                        </div>
-                        <div className="text-lg font-medium text-gray-600">
-                          Base Token
-                        </div>
-                        <div className="text-sm text-gray-500 truncate">
-                          {selectedPool.originalPool?.baseToken?.mint}
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.baseToken?.mint}/logo.png`}
+                          alt={selectedPool.originalPool?.baseToken?.symbol || "TOKEN"}
+                          className="w-16 h-16 border-2 border-zinc-800"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
+                          }}
+                        />
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {selectedPool.originalPool?.baseToken?.symbol ||
+                              "TOKEN"}
+                          </div>
+                          <div className="text-lg font-medium text-gray-600">
+                            Base Token
+                          </div>
+                          <div className="text-sm text-gray-500 truncate max-w-[200px]">
+                            {selectedPool.originalPool?.baseToken?.mint}
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-2xl font-bold">
-                          {selectedPool.originalPool?.quoteToken?.symbol ||
-                            "TOKEN"}
-                        </div>
-                        <div className="text-lg font-medium text-gray-600">
-                          Quote Token
-                        </div>
-                        <div className="text-sm text-gray-500 truncate">
-                          {selectedPool.originalPool?.quoteToken?.mint}
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.quoteToken?.mint}/logo.png`}
+                          alt={selectedPool.originalPool?.quoteToken?.symbol || "TOKEN"}
+                          className="w-16 h-16 border-2 border-zinc-800"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
+                          }}
+                        />
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {selectedPool.originalPool?.quoteToken?.symbol ||
+                              "TOKEN"}
+                          </div>
+                          <div className="text-lg font-medium text-gray-600">
+                            Quote Token
+                          </div>
+                          <div className="text-sm text-gray-500 truncate max-w-[200px]">
+                            {selectedPool.originalPool?.quoteToken?.mint}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-2">
+                    <div className="mt-4 p-4 bg-[#0a0a0a] border-2 border-zinc-800">
+                      <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider mb-2">
                         Exchange Rates:
                       </div>
-                      <div className="flex flex-col gap-1 text-sm">
-                        <div>
+                      <div className="flex flex-col gap-1 text-sm font-mono">
+                        <div className="text-white">
                           1{" "}
                           {selectedPool.originalPool?.baseToken?.symbol ||
                             "TOKEN"}{" "}
@@ -645,7 +598,7 @@ export function PoolsSection() {
                           {selectedPool.originalPool?.quoteToken?.symbol ||
                             "TOKEN"}
                         </div>
-                        <div>
+                        <div className="text-zinc-400">
                           Price: {formatCurrency(selectedPool.price || 0)}
                         </div>
                       </div>
@@ -693,10 +646,7 @@ export function PoolsSection() {
 
                 {/* Charts */}
                 {modalLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span className="ml-2">Loading charts...</span>
-                  </div>
+                  <ConsoleLoading message="LOADING CHARTS..." bars={15} />
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Volume Chart */}

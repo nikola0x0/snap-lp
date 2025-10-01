@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { SwapSectionSimple as SwapSection } from "@/components/dashboard-sections/swap-section-simple";
 import { PoolsSection } from "@/components/dashboard-sections/pools-section";
 import { TemplatesSection } from "@/components/dashboard-sections/templates-section";
@@ -107,26 +104,42 @@ export default function Home() {
   return (
     <div className="h-full flex overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col border-r bg-background">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col border-r-2 border-cyan-500/30 bg-zinc-950">
+        {/* Console Header */}
+        <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent">
+          <div className="p-4">
+            <div className="text-cyan-400 font-mono text-xs tracking-[0.3em] uppercase">
+              /// THE CONSOLE
+            </div>
+            <div className="flex gap-1 mt-2">
+              <div className="w-2 h-2 bg-cyan-400" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-80" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-60" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-40" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-20" />
+            </div>
+          </div>
+        </div>
+
         {/* Progress Header */}
         {(isPoolSelected() || isTemplateSelected()) && (
-          <div className="p-4 border-b bg-muted/30">
+          <div className="p-4 border-b-2 border-cyan-500/20 bg-[#0a0a0a]">
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Current Selection
+              <div className="text-[9px] text-cyan-400 font-mono tracking-wider uppercase">
+                SYSTEM STATUS
               </div>
               {isPoolSelected() && (
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-3 h-3 text-green-600" />
-                  <span className="text-xs font-medium">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  <span className="text-xs font-mono text-white">
                     {getTokenPairSymbol()}
                   </span>
                 </div>
               )}
               {isTemplateSelected() && (
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-3 h-3 text-green-600" />
-                  <span className="text-xs font-medium">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  <span className="text-xs font-mono text-white">
                     {selectedTemplate?.name}
                   </span>
                 </div>
@@ -135,40 +148,58 @@ export default function Home() {
           </div>
         )}
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-3 space-y-1">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentStep === item.id;
             const canAccess = canAccessStep(item.id);
 
             return (
-              <Button
+              <button
+                type="button"
                 key={item.id}
-                variant={isActive ? "secondary" : "ghost"}
                 disabled={!canAccess}
-                className={`w-full justify-start h-auto p-3 relative ${
-                  isActive ? "bg-primary/10" : ""
-                } ${!canAccess ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`w-full p-3 border-2 transition-all duration-200 ${
+                  isActive
+                    ? "border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+                    : canAccess
+                    ? "border-zinc-800 hover:border-cyan-500/50 bg-[#0a0a0a] hover:bg-cyan-500/5"
+                    : "border-zinc-800 bg-zinc-900/50 opacity-40 cursor-not-allowed"
+                }`}
                 onClick={() => canAccess && setStep(item.id)}
               >
-                <div className="flex items-center w-full">
-                  <Icon className="w-5 h-5 mr-3" />
+                <div className="flex items-center w-full gap-3">
+                  <Icon
+                    className={`w-5 h-5 ${
+                      isActive ? "text-cyan-400" : "text-zinc-500"
+                    }`}
+                  />
                   <div className="text-left flex-1">
-                    <div className="font-medium">{item.label}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div
+                      className={`font-mono text-sm font-bold ${
+                        isActive ? "text-cyan-400" : "text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </div>
+                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
                       {item.description}
                     </div>
                   </div>
+                  {isActive && (
+                    <ArrowRight className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  )}
                 </div>
-              </Button>
+              </button>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t">
-          <div className="text-xs text-muted-foreground text-center">
-            Built with Saros DLMM SDK
+        <div className="p-4 border-t-2 border-cyan-500/30 bg-[#0a0a0a]">
+          <div className="text-[9px] text-zinc-500 font-mono tracking-wider uppercase text-center space-y-1">
+            <div>DLMM STRATEGY PLATFORM</div>
+            <div>POWERED BY SAROS DLMM</div>
           </div>
         </div>
       </aside>
@@ -178,34 +209,40 @@ export default function Home() {
         <div className="lg:hidden fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/80"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           />
-          <Card className="fixed left-0 top-0 h-full w-64 bg-background z-10">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="font-semibold">Navigation</h2>
-              <Button
-                variant="ghost"
-                size="sm"
+          <div className="fixed left-0 top-0 h-full w-64 bg-zinc-950 border-r-2 border-cyan-500/30 z-10">
+            <div className="flex items-center justify-between p-4 border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent">
+              <h2 className="font-mono text-xs tracking-[0.3em] uppercase text-cyan-400">
+                /// THE CONSOLE
+              </h2>
+              <button
+                type="button"
+                className="text-cyan-400 hover:text-cyan-300"
                 onClick={() => setSidebarOpen(false)}
               >
                 <X className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
-            <nav className="p-4 space-y-2">
+            <nav className="p-3 space-y-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentStep === item.id;
                 const canAccess = canAccessStep(item.id);
 
                 return (
-                  <Button
+                  <button
+                    type="button"
                     key={item.id}
-                    variant={isActive ? "secondary" : "ghost"}
                     disabled={!canAccess}
-                    className={`w-full justify-start h-auto p-3 ${
-                      !canAccess ? "opacity-50 cursor-not-allowed" : ""
+                    className={`w-full p-3 border-2 transition-all duration-200 ${
+                      isActive
+                        ? "border-cyan-500 bg-cyan-500/10"
+                        : canAccess
+                        ? "border-zinc-800 hover:border-cyan-500/50 bg-[#0a0a0a]"
+                        : "border-zinc-800 bg-zinc-900/50 opacity-40"
                     }`}
                     onClick={() => {
                       if (canAccess) {
@@ -214,18 +251,30 @@ export default function Home() {
                       }
                     }}
                   >
-                    <Icon className="w-5 h-5 mr-3" />
-                    <div className="text-left">
-                      <div className="font-medium">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {item.description}
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? "text-cyan-400" : "text-zinc-500"
+                        }`}
+                      />
+                      <div className="text-left">
+                        <div
+                          className={`font-mono text-sm font-bold ${
+                            isActive ? "text-cyan-400" : "text-white"
+                          }`}
+                        >
+                          {item.label}
+                        </div>
+                        <div className="text-[10px] font-mono text-zinc-500 uppercase">
+                          {item.description}
+                        </div>
                       </div>
                     </div>
-                  </Button>
+                  </button>
                 );
               })}
             </nav>
-          </Card>
+          </div>
         </div>
       )}
 

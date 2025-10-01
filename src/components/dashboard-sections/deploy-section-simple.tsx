@@ -5,9 +5,6 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { useAppStore } from "@/store/app-store";
 import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
-import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { TokenPairIcon } from "../token-pair-icon";
 import {
@@ -576,24 +573,36 @@ export function DeploySection() {
   // Redirect if no pool/template selected
   if (!selectedPool || !selectedTemplate) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-        <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-          <Target className="w-10 h-10 text-white" />
+      <div className="space-y-4">
+        <div className="border-2 border-cyan-500/30 bg-zinc-950">
+          <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+            <h2 className="text-cyan-400 font-mono text-sm uppercase tracking-wider">
+              {"/// DEPLOYMENT SYSTEM"}
+            </h2>
+          </div>
+          <div className="p-8 text-center space-y-4">
+            <div className="w-16 h-16 border-2 border-amber-500 bg-amber-500/10 mx-auto flex items-center justify-center">
+              <Target className="w-8 h-8 text-amber-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-mono text-white uppercase">
+                {!selectedPool ? "POOL REQUIRED" : "STRATEGY REQUIRED"}
+              </h3>
+              <p className="text-xs font-mono text-zinc-400 max-w-sm mx-auto uppercase">
+                {!selectedPool
+                  ? "Select a liquidity pool to continue"
+                  : "Select a strategy template to continue"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStep(!selectedPool ? "pools" : "templates")}
+              className="px-4 py-2 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 font-mono text-xs uppercase tracking-wider transition-all"
+            >
+              {!selectedPool ? "→ SELECT POOL" : "→ SELECT STRATEGY"}
+            </button>
+          </div>
         </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-bold">Ready to Deploy?</h3>
-          <p className="text-muted-foreground max-w-sm">
-            {!selectedPool
-              ? "Please select a pool first."
-              : "Please select a strategy template first."}
-          </p>
-        </div>
-        <Button
-          onClick={() => setStep(!selectedPool ? "pools" : "templates")}
-          variant="outline"
-        >
-          {!selectedPool ? "Go to Pool Selection" : "Go to Template Selection"}
-        </Button>
       </div>
     );
   }
@@ -601,23 +610,34 @@ export function DeploySection() {
   // Wallet connection requirement
   if (!connected) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-6">
-        <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-          <WalletIcon className="w-10 h-10 text-white" />
+      <div className="space-y-4">
+        <div className="border-2 border-cyan-500/30 bg-zinc-950">
+          <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+            <h2 className="text-cyan-400 font-mono text-sm uppercase tracking-wider">
+              {"/// DEPLOYMENT SYSTEM"}
+            </h2>
+          </div>
+          <div className="p-8 text-center space-y-6">
+            <div className="w-16 h-16 border-2 border-red-500 bg-red-500/10 mx-auto flex items-center justify-center">
+              <WalletIcon className="w-8 h-8 text-red-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-mono text-white uppercase">
+                WALLET NOT CONNECTED
+              </h3>
+              <p className="text-xs font-mono text-zinc-400 max-w-sm mx-auto uppercase">
+                Connect your wallet to add liquidity to the pool
+              </p>
+            </div>
+            <ClientOnly
+              fallback={
+                <div className="h-10 w-32 bg-zinc-800 animate-pulse mx-auto" />
+              }
+            >
+              <WalletMultiButton />
+            </ClientOnly>
+          </div>
         </div>
-        <div className="text-center space-y-2">
-          <h3 className="text-xl font-bold">Connect Wallet</h3>
-          <p className="text-muted-foreground max-w-sm">
-            Connect your wallet to add liquidity to the pool
-          </p>
-        </div>
-        <ClientOnly
-          fallback={
-            <div className="h-10 w-32 bg-muted animate-pulse rounded-md" />
-          }
-        >
-          <WalletMultiButton />
-        </ClientOnly>
       </div>
     );
   }
@@ -695,52 +715,56 @@ Continuing will create an empty position without adding liquidity. You can add l
       />
 
       <div className="space-y-4 pb-32">
-        {/* Pool & Strategy Info */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Add Liquidity</h2>
-            <p className="text-xs text-muted-foreground">
-              Deploy {selectedTemplate.name} strategy
-            </p>
+        {/* Header */}
+        <div className="border-2 border-cyan-500/30 bg-zinc-950">
+          <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-cyan-400 font-mono text-sm uppercase tracking-wider">
+                  {"/// ADD LIQUIDITY"}
+                </h2>
+                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mt-1">
+                  Deploy {selectedTemplate.name} strategy
+                </p>
+              </div>
+              {selectedPool && (
+                <TokenPairIcon
+                  tokenA={{
+                    symbol: currentTokenX,
+                    image: getTokenImage(currentTokenX),
+                  }}
+                  tokenB={{
+                    symbol: currentTokenY,
+                    image: getTokenImage(currentTokenY),
+                  }}
+                  size="md"
+                />
+              )}
+            </div>
           </div>
-          {selectedPool && (
-            <TokenPairIcon
-              tokenA={{
-                symbol: currentTokenX,
-                image: getTokenImage(currentTokenX),
-              }}
-              tokenB={{
-                symbol: currentTokenY,
-                image: getTokenImage(currentTokenY),
-              }}
-              size="md"
-            />
-          )}
-        </div>
 
         {/* Main Card */}
-        <div className="max-w-xl mx-auto">
-          <Card>
-            <CardContent className="p-4 space-y-3">
+        <div className="p-6">
+          <div className="space-y-4 max-w-2xl mx-auto">
               {/* Token X Input */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">First token</span>
-                  <span className="text-muted-foreground">
-                    Balance: {tokenXBalance}
+                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+                  <span className="text-cyan-400">TOKEN INPUT 1</span>
+                  <span className="text-zinc-500">
+                    BALANCE: {tokenXBalance}
                   </span>
                 </div>
-                <div className="relative">
+                <div className="relative bg-[#0a0a0a] border-2 border-zinc-800">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                     <div className="flex items-center gap-2">
                       <img
                         src={getTokenImage(tokenX)}
                         alt={tokenX}
-                        className="w-8 h-8 rounded-full border-2 border-background"
+                        className="w-8 h-8 border-2 border-zinc-800"
                       />
                       <div>
-                        <div className="font-semibold text-sm">{tokenX}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="font-bold font-mono text-sm text-white">{tokenX}</div>
+                        <div className="text-[9px] font-mono text-zinc-500">
                           ${(xAmount * tokenXPrice).toFixed(2)}
                         </div>
                       </div>
@@ -751,47 +775,46 @@ Continuing will create an empty position without adding liquidity. You can add l
                     value={tokenXAmount}
                     onChange={(e) => handleTokenXChange(e.target.value)}
                     placeholder="0.00"
-                    className="h-16 pl-28 pr-20 text-right text-2xl font-bold"
+                    className="h-16 pl-28 pr-20 text-right text-2xl font-bold font-mono bg-transparent border-0 focus-visible:ring-0"
                     min="0"
                     step="1"
                   />
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => handleTokenXChange(tokenXBalance)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs h-7"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] h-7 px-2 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 font-mono uppercase tracking-wider"
                   >
                     MAX
-                  </Button>
+                  </button>
                 </div>
               </div>
 
               {/* Plus Icon */}
               <div className="flex justify-center -my-1">
-                <div className="h-8 w-8 rounded-full border-2 border-border flex items-center justify-center bg-muted">
-                  <Plus className="w-4 h-4 text-muted-foreground" />
+                <div className="h-8 w-8 border-2 border-zinc-800 bg-[#0a0a0a] flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-zinc-500" />
                 </div>
               </div>
 
               {/* Token Y Input */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Second token</span>
-                  <span className="text-muted-foreground">
-                    Balance: {tokenYBalance}
+                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+                  <span className="text-cyan-400">TOKEN INPUT 2</span>
+                  <span className="text-zinc-500">
+                    BALANCE: {tokenYBalance}
                   </span>
                 </div>
-                <div className="relative">
+                <div className="relative bg-[#0a0a0a] border-2 border-zinc-800">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                     <div className="flex items-center gap-2">
                       <img
                         src={getTokenImage(tokenY)}
                         alt={tokenY}
-                        className="w-8 h-8 rounded-full border-2 border-background"
+                        className="w-8 h-8 border-2 border-zinc-800"
                       />
                       <div>
-                        <div className="font-semibold text-sm">{tokenY}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="font-bold font-mono text-sm text-white">{tokenY}</div>
+                        <div className="text-[9px] font-mono text-zinc-500">
                           ${(yAmount * tokenYPrice).toFixed(2)}
                         </div>
                       </div>
@@ -802,18 +825,17 @@ Continuing will create an empty position without adding liquidity. You can add l
                     value={tokenYAmount}
                     onChange={(e) => handleTokenYChange(e.target.value)}
                     placeholder="0.00"
-                    className="h-16 pl-28 pr-20 text-right text-2xl font-bold"
+                    className="h-16 pl-28 pr-20 text-right text-2xl font-bold font-mono bg-transparent border-0 focus-visible:ring-0"
                     min="0"
                     step="1"
                   />
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => handleTokenYChange(tokenYBalance)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs h-7"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] h-7 px-2 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 font-mono uppercase tracking-wider"
                   >
                     MAX
-                  </Button>
+                  </button>
                 </div>
               </div>
 
@@ -821,13 +843,13 @@ Continuing will create an empty position without adding liquidity. You can add l
               {connected &&
                 (parseFloat(tokenXBalance) === 0 ||
                   parseFloat(tokenYBalance) === 0) && (
-                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                    <div className="text-xs">
-                      <div className="font-semibold text-orange-700">
-                        No Token Balance
+                  <div className="bg-amber-500/10 border-2 border-amber-500/50 p-3 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-[10px] font-mono">
+                      <div className="font-bold text-amber-400 uppercase tracking-wider">
+                        NO TOKEN BALANCE
                       </div>
-                      <div className="text-orange-600 mt-0.5">
+                      <div className="text-amber-200/80 mt-1 uppercase">
                         You need {currentTokenX} and {currentTokenY} tokens in
                         your wallet to add liquidity.
                         {parseFloat(tokenXBalance) === 0 &&
@@ -841,71 +863,69 @@ Continuing will create an empty position without adding liquidity. You can add l
 
               {/* Strategy Info */}
               {totalValue > 0 && (
-                <div className="space-y-2 bg-muted/50 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-xs font-medium">
+                <div className="space-y-3 bg-[#0a0a0a] border-2 border-zinc-800 p-4">
+                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-cyan-400">
                     <Layers className="w-3 h-3" />
-                    <span>Strategy Details</span>
+                    <span>STRATEGY DETAILS</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-xs">
-                    <div>
-                      <div className="text-muted-foreground">Total Value</div>
-                      <div className="font-semibold">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-zinc-900 border-2 border-zinc-800 p-2">
+                      <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">Total Value</div>
+                      <div className="font-bold font-mono text-white">
                         ${totalValue.toFixed(2)}
                       </div>
                     </div>
-                    <div>
-                      <div className="text-muted-foreground">Est. APR</div>
-                      <div className="font-semibold text-green-600">
+                    <div className="bg-zinc-900 border-2 border-zinc-800 p-2">
+                      <div className="text-[9px] font-mono text-green-400 uppercase tracking-wider">Est. APR</div>
+                      <div className="font-bold font-mono text-green-400">
                         {selectedTemplate.estimatedAPR}%
                       </div>
                     </div>
-                    <div>
-                      <div className="text-muted-foreground">Risk Level</div>
-                      <Badge
-                        variant="secondary"
-                        className="font-semibold text-[10px] px-1.5 py-0"
-                      >
+                    <div className="bg-zinc-900 border-2 border-zinc-800 p-2">
+                      <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">Risk Level</div>
+                      <div className="font-bold font-mono text-white text-sm">
                         {selectedTemplate.riskLevel}
-                      </Badge>
+                      </div>
                     </div>
                   </div>
                   {exchangeRate > 0 && (
-                    <div className="pt-1.5 border-t text-[10px] text-muted-foreground">
-                      Rate: 1 {tokenX} ≈ {exchangeRate.toFixed(6)} {tokenY}
+                    <div className="pt-2 border-t-2 border-zinc-800 text-[9px] font-mono text-zinc-500 uppercase">
+                      RATE: 1 {tokenX} ≈ {exchangeRate.toFixed(6)} {tokenY}
                     </div>
                   )}
                 </div>
               )}
 
               {/* Add Liquidity Button */}
-              <Button
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              <button
+                type="button"
                 onClick={handleAddLiquidity}
                 disabled={
                   isDeploying || !tokenXAmount || parseFloat(tokenXAmount) <= 0
                 }
+                className="w-full h-12 border-2 border-green-500 bg-green-500/10 text-green-400 hover:bg-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
               >
                 {isDeploying ? (
-                  <div className="flex items-center gap-2">
+                  <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Adding Liquidity...
-                  </div>
+                    ADDING LIQUIDITY...
+                  </>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <>
                     <TrendingUp className="w-4 h-4" />
-                    Add Liquidity
-                  </div>
+                    ADD LIQUIDITY
+                  </>
                 )}
-              </Button>
+              </button>
 
               {/* Footer Info */}
-              <div className="text-center text-[10px] text-muted-foreground">
+              <div className="text-center text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
                 Slippage: {selectedTemplate.parameters.slippage * 100}% • Range:
                 ±{selectedTemplate.binConfiguration.rangeWidth / 2}% • Powered
                 by Saros DLMM
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </>

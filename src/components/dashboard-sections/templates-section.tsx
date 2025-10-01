@@ -5,9 +5,9 @@ import { STRATEGY_TEMPLATES } from "@/data/strategy-templates";
 import { TemplatesGallery } from "../templates-gallery";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Card, CardContent } from "../ui/card";
 import { useAppStore } from "@/store/app-store";
 import { StrategyInfoModal } from "../strategy-info-modal";
+import { TerminalHeader } from "../terminal-header";
 import {
   BarChart3,
   Filter,
@@ -15,7 +15,6 @@ import {
   TrendingUp,
   Trophy,
   ArrowLeft,
-  CheckCircle,
   Info,
 } from "lucide-react";
 
@@ -80,114 +79,120 @@ export function TemplatesSection() {
   }
 
   return (
-    <div className="relative space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Step 2: Choose Strategy
-            </h1>
-            <p className="text-muted-foreground">
-              Select a strategy template optimized for {getTokenPairSymbol()}.
-              These templates are created by expert traders and the community.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => setShowInfoModal(true)}
-            className="gap-2"
-          >
-            <Info className="w-5 h-5" />
-            How Templates Work
-          </Button>
-        </div>
-      </div>
-
-      <StrategyInfoModal
-        isOpen={showInfoModal}
-        onClose={() => setShowInfoModal(false)}
+    <div className="relative space-y-4">
+      <TerminalHeader
+        title="STRATEGY TEMPLATES"
+        subtitle={`SELECT TEMPLATE FOR ${getTokenPairSymbol()} • ${filteredTemplates.length} AVAILABLE`}
       />
 
-      {/* Search and Filter Controls */}
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search templates by name, description, or tags..."
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchTerm(e.target.value)
-            }
-            className="pl-10"
-          />
+      <div className="bg-zinc-950 border-2 border-zinc-800 p-4">
+        <StrategyInfoModal
+          isOpen={showInfoModal}
+          onClose={() => setShowInfoModal(false)}
+        />
+
+        {/* Search and Filter Controls */}
+        <div className="space-y-4 mb-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Input
+                placeholder="Search templates..."
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchTerm(e.target.value)
+                }
+                className="pl-10 bg-[#0a0a0a] border-zinc-700 text-white"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowInfoModal(true)}
+              className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+            >
+              <Info className="w-4 h-4 mr-2" />
+              INFO
+            </Button>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setActiveFilter("all")}
+              className={`px-3 py-1.5 border-2 text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                activeFilter === "all"
+                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
+                  : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
+              }`}
+            >
+              <Filter className="w-3 h-3 inline mr-1" />
+              ALL ({getFilterStats("all")})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFilter("Conservative")}
+              className={`px-3 py-1.5 border-2 text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                activeFilter === "Conservative"
+                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
+                  : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
+              }`}
+            >
+              {getFilterIcon("Conservative")}
+              <span className="ml-1">
+                SAFE ({getFilterStats("Conservative")})
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFilter("Balanced")}
+              className={`px-3 py-1.5 border-2 text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                activeFilter === "Balanced"
+                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
+                  : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
+              }`}
+            >
+              {getFilterIcon("Balanced")}
+              <span className="ml-1">
+                BALANCED ({getFilterStats("Balanced")})
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFilter("Aggressive")}
+              className={`px-3 py-1.5 border-2 text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                activeFilter === "Aggressive"
+                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
+                  : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
+              }`}
+            >
+              {getFilterIcon("Aggressive")}
+              <span className="ml-1">
+                AGGRO ({getFilterStats("Aggressive")})
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant={activeFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("all")}
-            className="h-8"
-          >
-            <Filter className="w-4 h-4 mr-1" />
-            All Templates ({getFilterStats("all")})
-          </Button>
-          <Button
-            variant={activeFilter === "Conservative" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("Conservative")}
-            className="h-8"
-          >
-            {getFilterIcon("Conservative")}
-            <span className="ml-1">
-              Conservative ({getFilterStats("Conservative")})
-            </span>
-          </Button>
-          <Button
-            variant={activeFilter === "Balanced" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("Balanced")}
-            className="h-8"
-          >
-            {getFilterIcon("Balanced")}
-            <span className="ml-1">
-              Balanced ({getFilterStats("Balanced")})
-            </span>
-          </Button>
-          <Button
-            variant={activeFilter === "Aggressive" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("Aggressive")}
-            className="h-8"
-          >
-            {getFilterIcon("Aggressive")}
-            <span className="ml-1">
-              Aggressive ({getFilterStats("Aggressive")})
-            </span>
-          </Button>
+        {/* Results Summary */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
+            SHOWING {filteredTemplates.length} OF {STRATEGY_TEMPLATES.length}{" "}
+            TEMPLATES
+          </div>
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 uppercase"
+            >
+              CLEAR
+            </button>
+          )}
         </div>
+
+        <TemplatesGallery templates={filteredTemplates} />
       </div>
-
-      {/* Results Summary */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredTemplates.length} of {STRATEGY_TEMPLATES.length}{" "}
-          templates
-        </div>
-        {searchTerm && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearchTerm("")}
-            className="h-auto p-1 text-xs"
-          >
-            Clear search
-          </Button>
-        )}
-      </div>
-
-      <TemplatesGallery templates={filteredTemplates} />
 
       {/* Bottom padding for fixed bar */}
       <div className="h-40" />

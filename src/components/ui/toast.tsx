@@ -19,30 +19,38 @@ export function Toast({ message, type, onClose, duration = 5000 }: ToastProps) {
   }, [duration, onClose, type]);
 
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-green-600" />,
-    error: <XCircle className="w-5 h-5 text-red-600" />,
-    info: <Info className="w-5 h-5 text-blue-600" />,
-    loading: <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />,
+    success: <CheckCircle className="w-5 h-5 text-green-400" />,
+    error: <XCircle className="w-5 h-5 text-red-400" />,
+    info: <Info className="w-5 h-5 text-cyan-400" />,
+    loading: <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />,
   };
 
   const bgColors = {
-    success: "bg-green-50 border-green-200",
-    error: "bg-red-50 border-red-200",
-    info: "bg-blue-50 border-blue-200",
-    loading: "bg-blue-50 border-blue-200",
+    success: "bg-zinc-950 border-green-500",
+    error: "bg-zinc-950 border-red-500",
+    info: "bg-zinc-950 border-cyan-500",
+    loading: "bg-zinc-950 border-cyan-500",
+  };
+
+  const textColors = {
+    success: "text-green-400",
+    error: "text-red-400",
+    info: "text-cyan-400",
+    loading: "text-cyan-400",
   };
 
   return (
     <div
-      className={`fixed bottom-24 right-4 z-[60] max-w-md animate-in slide-in-from-bottom-5 ${bgColors[type]} border rounded-lg shadow-lg p-4`}
+      className={`fixed bottom-24 right-4 z-[60] max-w-md animate-in slide-in-from-bottom-5 ${bgColors[type]} border-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] p-4`}
     >
       <div className="flex items-start gap-3">
         {icons[type]}
-        <div className="flex-1 text-sm font-medium">{message}</div>
+        <div className={`flex-1 text-xs font-mono uppercase tracking-wider ${textColors[type]}`}>{message}</div>
         {type !== "loading" && (
           <button
+            type="button"
             onClick={onClose}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            className="flex-shrink-0 text-zinc-500 hover:text-zinc-400"
           >
             <X className="w-4 h-4" />
           </button>

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { WalletContextProvider } from "@/components/wallet-provider";
 import { Header } from "@/components/header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const shareTechMono = localFont({
+  src: "../../public/fonts/ShareTechMono-Regular.ttf",
+  variable: "--font-share-tech",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const abel = localFont({
+  src: "../../public/fonts/Abel-Regular.ttf",
+  variable: "--font-abel",
 });
 
 export const metadata: Metadata = {
@@ -26,9 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden bg-background flex flex-col`}
+        className={`${abel.variable} ${shareTechMono.variable} antialiased h-screen overflow-hidden bg-[#0a0a0a] text-white flex flex-col`}
       >
         <WalletContextProvider>
           <Header />
