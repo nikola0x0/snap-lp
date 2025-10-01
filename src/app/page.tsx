@@ -1,103 +1,290 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { SwapSectionSimple as SwapSection } from "@/components/dashboard-sections/swap-section-simple";
+import { PoolsSection } from "@/components/dashboard-sections/pools-section";
+import { TemplatesSection } from "@/components/dashboard-sections/templates-section";
+import { PortfolioSection } from "@/components/dashboard-sections/portfolio-section";
+import { DeploySection } from "@/components/dashboard-sections/deploy-section-simple";
+import { useAppStore } from "@/store/app-store";
+import { UnifiedSelectionBar } from "@/components/unified-selection-bar";
+import {
+  LayoutDashboard,
+  Search,
+  Wallet,
+  Plus,
+  X,
+  ArrowRight,
+  CheckCircle,
+  ArrowUpDown,
+} from "lucide-react";
+
+export type DashboardSection =
+  | "pools"
+  | "templates"
+  | "deploy"
+  | "portfolio"
+  | "create";
+
+const navigationItems = [
+  {
+    id: "pools" as DashboardSection,
+    label: "Pools",
+    icon: Search,
+    description: "DLMM pools",
+  },
+  {
+    id: "templates" as DashboardSection,
+    label: "Strategy Library",
+    icon: LayoutDashboard,
+    description: "Browse strategies",
+  },
+  {
+    id: "deploy" as DashboardSection,
+    label: "Deploy",
+    icon: Plus,
+    description: "Create position",
+  },
+  {
+    id: "portfolio" as DashboardSection,
+    label: "Portfolio",
+    icon: Wallet,
+    description: "Your positions",
+  },
+  {
+    id: "create" as DashboardSection,
+    label: "Create Strategy",
+    icon: Plus,
+    description: "Build & share",
+  },
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const {
+    currentStep,
+    setStep,
+    selectedTemplate,
+    getTokenPairSymbol,
+    isPoolSelected,
+    isTemplateSelected,
+  } = useAppStore();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const renderSection = () => {
+    switch (currentStep) {
+      case "pools":
+        return <PoolsSection />;
+      case "templates":
+        return <TemplatesSection />;
+      case "deploy":
+        return <DeploySection />;
+      case "portfolio":
+        return <PortfolioSection />;
+      case "create":
+        return (
+          <div className="p-8 text-center text-muted-foreground">
+            <strong>Strategy Builder</strong> - Create and monetize your own
+            strategies (Coming Soon)
+          </div>
+        );
+      default:
+        return <PoolsSection />;
+    }
+  };
+
+  const canAccessStep = (stepId: DashboardSection) => {
+    if (stepId === "pools") return true;
+    if (stepId === "templates") return true;
+    if (stepId === "deploy") return isPoolSelected() && isTemplateSelected();
+    if (stepId === "portfolio") return true;
+    if (stepId === "create") return true;
+    return false;
+  };
+
+  return (
+    <div className="h-full flex overflow-hidden">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col border-r-2 border-cyan-500/30 bg-zinc-950">
+        {/* Console Header */}
+        <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent">
+          <div className="p-4">
+            <div className="text-cyan-400 font-mono text-xs tracking-[0.3em] uppercase">
+              /// THE CONSOLE
+            </div>
+            <div className="flex gap-1 mt-2">
+              <div className="w-2 h-2 bg-cyan-400" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-80" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-60" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-40" />
+              <div className="w-2 h-2 bg-cyan-400 opacity-20" />
+            </div>
+          </div>
         </div>
+
+        {/* Progress Header */}
+        {(isPoolSelected() || isTemplateSelected()) && (
+          <div className="p-4 border-b-2 border-cyan-500/20 bg-[#0a0a0a]">
+            <div className="space-y-2">
+              <div className="text-[9px] text-cyan-400 font-mono tracking-wider uppercase">
+                SYSTEM STATUS
+              </div>
+              {isPoolSelected() && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  <span className="text-xs font-mono text-white">
+                    {getTokenPairSymbol()}
+                  </span>
+                </div>
+              )}
+              {isTemplateSelected() && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  <span className="text-xs font-mono text-white">
+                    {selectedTemplate?.name}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <nav className="flex-1 p-3 space-y-1">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentStep === item.id;
+            const canAccess = canAccessStep(item.id);
+
+            return (
+              <button
+                type="button"
+                key={item.id}
+                disabled={!canAccess}
+                className={`w-full p-3 border-2 transition-all duration-200 ${
+                  isActive
+                    ? "border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+                    : canAccess
+                    ? "border-zinc-800 hover:border-cyan-500/50 bg-[#0a0a0a] hover:bg-cyan-500/5"
+                    : "border-zinc-800 bg-zinc-900/50 opacity-40 cursor-not-allowed"
+                }`}
+                onClick={() => canAccess && setStep(item.id)}
+              >
+                <div className="flex items-center w-full gap-3">
+                  <Icon
+                    className={`w-5 h-5 ${
+                      isActive ? "text-cyan-400" : "text-zinc-500"
+                    }`}
+                  />
+                  <div className="text-left flex-1">
+                    <div
+                      className={`font-mono text-sm font-bold ${
+                        isActive ? "text-cyan-400" : "text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </div>
+                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                      {item.description}
+                    </div>
+                  </div>
+                  {isActive && (
+                    <ArrowRight className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t-2 border-cyan-500/30 bg-[#0a0a0a]">
+          <div className="text-[9px] text-zinc-500 font-mono tracking-wider uppercase text-center space-y-1">
+            <div>DLMM STRATEGY PLATFORM</div>
+            <div>POWERED BY SAROS DLMM</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          />
+          <div className="fixed left-0 top-0 h-full w-64 bg-zinc-950 border-r-2 border-cyan-500/30 z-10">
+            <div className="flex items-center justify-between p-4 border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent">
+              <h2 className="font-mono text-xs tracking-[0.3em] uppercase text-cyan-400">
+                /// THE CONSOLE
+              </h2>
+              <button
+                type="button"
+                className="text-cyan-400 hover:text-cyan-300"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <nav className="p-3 space-y-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentStep === item.id;
+                const canAccess = canAccessStep(item.id);
+
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    disabled={!canAccess}
+                    className={`w-full p-3 border-2 transition-all duration-200 ${
+                      isActive
+                        ? "border-cyan-500 bg-cyan-500/10"
+                        : canAccess
+                        ? "border-zinc-800 hover:border-cyan-500/50 bg-[#0a0a0a]"
+                        : "border-zinc-800 bg-zinc-900/50 opacity-40"
+                    }`}
+                    onClick={() => {
+                      if (canAccess) {
+                        setStep(item.id);
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? "text-cyan-400" : "text-zinc-500"
+                        }`}
+                      />
+                      <div className="text-left">
+                        <div
+                          className={`font-mono text-sm font-bold ${
+                            isActive ? "text-cyan-400" : "text-white"
+                          }`}
+                        >
+                          {item.label}
+                        </div>
+                        <div className="text-[10px] font-mono text-zinc-500 uppercase">
+                          {item.description}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto relative">
+        <div className="p-4 lg:p-8">{renderSection()}</div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      {/* Unified Selection Bar - Fixed at bottom across all tabs */}
+      <UnifiedSelectionBar />
     </div>
   );
 }
