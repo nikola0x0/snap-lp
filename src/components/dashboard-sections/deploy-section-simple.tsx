@@ -856,7 +856,7 @@ Continuing will create an empty position without adding liquidity. You can add l
                     <Layers className="w-3 h-3" />
                     <span>STRATEGY DETAILS</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="bg-zinc-900 border-2 border-zinc-800 p-2">
                       <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">Total Value</div>
                       <div className="font-bold font-mono text-white">

@@ -18,6 +18,7 @@ import {
   ArrowRight,
   CheckCircle,
   ArrowUpDown,
+  Menu,
 } from "lucide-react";
 
 export type DashboardSection =
@@ -276,6 +277,24 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto relative">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 z-40 border-b-2 border-cyan-500/30 bg-zinc-950">
+          <div className="flex items-center justify-between p-4">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="w-10 h-10 border-2 border-cyan-500 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 flex items-center justify-center"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="text-cyan-400 font-mono text-xs tracking-[0.3em] uppercase">
+              {"/// THE CONSOLE"}
+            </div>
+            <div className="w-10" />
+          </div>
+        </div>
+
         <div className="p-4 lg:p-8">{renderSection()}</div>
       </main>
 

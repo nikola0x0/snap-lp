@@ -175,7 +175,7 @@ export function StrategySimulator({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="border-2 border-cyan-500/30 bg-zinc-950 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+      <div className="border-2 border-cyan-500/30 bg-zinc-950 w-full max-w-[95vw] sm:max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4 sticky top-0 z-10 bg-zinc-950">
           <div className="flex items-center justify-between">
@@ -329,7 +329,7 @@ export function StrategySimulator({
               </div>
             </div>
             <div className="p-4">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
                   <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
                     Daily

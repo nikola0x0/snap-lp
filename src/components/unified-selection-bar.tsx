@@ -44,9 +44,9 @@ export function UnifiedSelectionBar() {
           </div>
 
           <div className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
               {/* Left side - Equipment Slots */}
-              <div className="flex items-center gap-3 flex-1">
+              <div className="flex flex-col sm:flex-row items-stretch gap-3 flex-1">
                 {/* Pool Slot */}
                 <div className="relative p-3 border-2 flex-1 min-w-0 bg-[#0a0a0a] border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
                   {selectedPool ? (
@@ -99,7 +99,7 @@ export function UnifiedSelectionBar() {
                 </div>
 
                 {/* Plus connector */}
-                <Plus className="w-5 h-5 text-cyan-500/50 flex-shrink-0" />
+                <Plus className="w-5 h-5 text-cyan-500/50 flex-shrink-0 hidden sm:block" />
 
                 {/* Strategy Slot */}
                 <div className="relative p-3 border-2 flex-1 min-w-0 bg-[#0a0a0a] border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
@@ -147,7 +147,7 @@ export function UnifiedSelectionBar() {
               </div>
 
               {/* Right side - Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {/* Pool selected but no strategy */}
                 {selectedPool && !selectedTemplate && (
                   <button
