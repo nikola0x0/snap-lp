@@ -5,19 +5,7 @@ import { TrendingUp, Zap, Plus, ChevronRight } from "lucide-react";
 import { StrategySimulator } from "./strategy-simulator";
 import { TokenPairIcon } from "./token-pair-icon";
 import { useState } from "react";
-
-const TOKEN_IMAGES: Record<string, string> = {
-  SOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
-  WSOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
-  USDT: "https://file.coin98.com/images/untitled-2-CdtGnpYdjMHmHJNL.png",
-  USDC: "https://file.coin98.com/images/tdugg6fe0z74qafm-PJ4GMyP9c0PtzSUJ.png",
-  PYUSD:
-    "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png",
-  C98: "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png",
-};
-
-const DEFAULT_IMAGE =
-  "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
+import { getTokenImage } from "@/constants/token-images";
 
 export function UnifiedSelectionBar() {
   const {
@@ -44,8 +32,6 @@ export function UnifiedSelectionBar() {
   };
 
   const { tokenA, tokenB } = getTokenSymbols();
-  const getTokenImage = (symbol: string) =>
-    TOKEN_IMAGES[symbol] || DEFAULT_IMAGE;
 
   return (
     <>

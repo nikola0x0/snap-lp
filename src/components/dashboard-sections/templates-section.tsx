@@ -31,7 +31,7 @@ export function TemplatesSection() {
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase()),
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     const matchesFilter =
@@ -82,7 +82,9 @@ export function TemplatesSection() {
     <div className="relative space-y-4">
       <TerminalHeader
         title="STRATEGY TEMPLATES"
-        subtitle={`SELECT TEMPLATE FOR ${getTokenPairSymbol()} • ${filteredTemplates.length} AVAILABLE`}
+        subtitle={`SELECT TEMPLATE FOR ${getTokenPairSymbol()} • ${
+          filteredTemplates.length
+        } AVAILABLE`}
       />
 
       <div className="bg-zinc-950 border-2 border-zinc-800 p-4">
@@ -126,8 +128,10 @@ export function TemplatesSection() {
                   : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
               }`}
             >
-              <Filter className="w-3 h-3 inline mr-1" />
-              ALL ({getFilterStats("all")})
+              <span className="flex items-center">
+                <Filter className="w-3 h-3 mr-1 align-middle" />
+                ALL ({getFilterStats("all")})
+              </span>
             </button>
             <button
               type="button"
@@ -138,9 +142,11 @@ export function TemplatesSection() {
                   : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
               }`}
             >
-              {getFilterIcon("Conservative")}
-              <span className="ml-1">
-                SAFE ({getFilterStats("Conservative")})
+              <span className="flex items-center">
+                {getFilterIcon("Conservative")}
+                <span className="ml-1">
+                  SAFE ({getFilterStats("Conservative")})
+                </span>
               </span>
             </button>
             <button
@@ -152,9 +158,11 @@ export function TemplatesSection() {
                   : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
               }`}
             >
-              {getFilterIcon("Balanced")}
-              <span className="ml-1">
-                BALANCED ({getFilterStats("Balanced")})
+              <span className="flex items-center">
+                {getFilterIcon("Balanced")}
+                <span className="ml-1">
+                  BALANCED ({getFilterStats("Balanced")})
+                </span>
               </span>
             </button>
             <button
@@ -166,9 +174,11 @@ export function TemplatesSection() {
                   : "border-zinc-800 bg-[#0a0a0a] text-zinc-400 hover:border-cyan-500/50"
               }`}
             >
-              {getFilterIcon("Aggressive")}
-              <span className="ml-1">
-                AGGRO ({getFilterStats("Aggressive")})
+              <span className="flex items-center">
+                {getFilterIcon("Aggressive")}
+                <span className="ml-1">
+                  AGGRO ({getFilterStats("Aggressive")})
+                </span>
               </span>
             </button>
           </div>

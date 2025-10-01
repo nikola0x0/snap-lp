@@ -22,6 +22,8 @@ import { useToast } from "../ui/toast";
 import { ConfirmDialog } from "../ui/confirm-dialog";
 
 // DLMM Service instance
+import { getTokenImage } from "@/constants/token-images";
+
 const dlmmService = new LiquidityBookServices({
   mode: MODE.DEVNET,
   options: {
@@ -29,18 +31,6 @@ const dlmmService = new LiquidityBookServices({
       "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7",
   },
 });
-
-const TOKEN_IMAGES: Record<string, string> = {
-  SOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
-  WSOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
-  USDT: "https://file.coin98.com/images/untitled-2-CdtGnpYdjMHmHJNL.png",
-  USDC: "https://file.coin98.com/images/tdugg6fe0z74qafm-PJ4GMyP9c0PtzSUJ.png",
-  PYUSD:
-    "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png",
-};
-
-const DEFAULT_IMAGE =
-  "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
 
 export function DeploySection() {
   const { connected, publicKey, sendTransaction } = useWallet();
@@ -673,8 +663,6 @@ export function DeploySection() {
     if (!isFinite(exchangeRate)) exchangeRate = 0;
   }
 
-  const getTokenImage = (symbol: string) =>
-    TOKEN_IMAGES[symbol] || DEFAULT_IMAGE;
 
   // Get token symbols for display
   const currentTokenX = selectedPool?.metadata

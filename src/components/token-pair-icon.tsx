@@ -1,3 +1,5 @@
+import { getTokenImage } from "@/constants/token-images";
+
 interface TokenPairIconProps {
   tokenA: {
     symbol: string;
@@ -9,17 +11,6 @@ interface TokenPairIconProps {
   };
   size?: "sm" | "md" | "lg";
 }
-
-const TOKEN_IMAGES: Record<string, string> = {
-  SOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-  WSOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-  PYUSD: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM/logo.png",
-  USDT: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.png",
-  USDC: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
-};
-
-const DEFAULT_IMAGE =
-  "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
 
 export function TokenPairIcon({
   tokenA,
@@ -34,20 +25,15 @@ export function TokenPairIcon({
 
   const { icon, overlap } = sizes[size];
 
-  const getTokenImage = (token: typeof tokenA) => {
-    if (token.image) return token.image;
-    return TOKEN_IMAGES[token.symbol] || DEFAULT_IMAGE;
-  };
-
   return (
     <div className="flex items-center">
       <img
-        src={getTokenImage(tokenA)}
+        src={tokenA.image || getTokenImage(tokenA.symbol)}
         alt={tokenA.symbol}
         className={`${icon} rounded-full border-2 border-background relative z-10`}
       />
       <img
-        src={getTokenImage(tokenB)}
+        src={tokenB.image || getTokenImage(tokenB.symbol)}
         alt={tokenB.symbol}
         className={`${icon} rounded-full border-2 border-background ${overlap}`}
       />

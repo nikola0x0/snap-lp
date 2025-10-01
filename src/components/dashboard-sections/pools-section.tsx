@@ -29,6 +29,7 @@ import { TerminalHeader } from "@/components/terminal-header";
 import { ConsoleLoading } from "@/components/console-loading";
 import { PoolCard } from "@/components/pool-card";
 import { Search, Loader2, ChevronRight, ArrowUpDown, BarChart3 } from "lucide-react";
+import { getTokenImage } from "@/constants/token-images";
 
 interface PoolMetrics {
   address: string;
@@ -506,20 +507,14 @@ export function PoolsSection() {
                 <DialogTitle className="flex items-center gap-3">
                   <div className="flex items-center -space-x-2">
                     <img
-                      src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.baseToken?.mint}/logo.png`}
+                      src={getTokenImage(selectedPool.originalPool?.baseToken?.symbol || "")}
                       alt={selectedPool.originalPool?.baseToken?.symbol || ""}
                       className="w-8 h-8 border-2 border-background relative z-10"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
-                      }}
                     />
                     <img
-                      src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.quoteToken?.mint}/logo.png`}
+                      src={getTokenImage(selectedPool.originalPool?.quoteToken?.symbol || "")}
                       alt={selectedPool.originalPool?.quoteToken?.symbol || ""}
                       className="w-8 h-8 border-2 border-background"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
-                      }}
                     />
                   </div>
                   {selectedPool.name} Pool Details
@@ -538,12 +533,9 @@ export function PoolsSection() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="flex items-center gap-3">
                         <img
-                          src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.baseToken?.mint}/logo.png`}
+                          src={getTokenImage(selectedPool.originalPool?.baseToken?.symbol || "TOKEN")}
                           alt={selectedPool.originalPool?.baseToken?.symbol || "TOKEN"}
                           className="w-16 h-16 border-2 border-zinc-800"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
-                          }}
                         />
                         <div>
                           <div className="text-2xl font-bold">
@@ -560,12 +552,9 @@ export function PoolsSection() {
                       </div>
                       <div className="flex items-center gap-3">
                         <img
-                          src={`https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${selectedPool.originalPool?.quoteToken?.mint}/logo.png`}
+                          src={getTokenImage(selectedPool.originalPool?.quoteToken?.symbol || "TOKEN")}
                           alt={selectedPool.originalPool?.quoteToken?.symbol || "TOKEN"}
                           className="w-16 h-16 border-2 border-zinc-800"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
-                          }}
                         />
                         <div>
                           <div className="text-2xl font-bold">

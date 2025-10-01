@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getTokenImage } from "@/constants/token-images";
 
 // DLMM Service
 const dlmmService = new LiquidityBookServices({
@@ -63,12 +64,6 @@ const SWAP_POOLS = [
     },
   },
 ];
-
-const TOKEN_IMAGES: Record<string, string> = {
-  WSOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-  PYUSD: "https://s2.coinmarketcap.com/static/img/coins/64x64/27772.png",
-  USDT: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
-};
 
 export function SwapSectionSimple() {
   const { connected, publicKey, sendTransaction } = useWallet();
@@ -403,7 +398,7 @@ export function SwapSectionSimple() {
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
                 <div className="flex items-center gap-3">
                   <img
-                    src={TOKEN_IMAGES[fromToken.symbol]}
+                    src={getTokenImage(fromToken.symbol)}
                     alt={fromToken.symbol}
                     className="w-10 h-10 border-2 border-zinc-800"
                   />
@@ -458,7 +453,7 @@ export function SwapSectionSimple() {
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
                 <div className="flex items-center gap-3">
                   <img
-                    src={TOKEN_IMAGES[toToken.symbol]}
+                    src={getTokenImage(toToken.symbol)}
                     alt={toToken.symbol}
                     className="w-10 h-10 border-2 border-zinc-800"
                   />

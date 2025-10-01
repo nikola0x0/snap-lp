@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { ClientOnly } from "../client-only";
 import { useAppStore } from "@/store/app-store";
@@ -595,152 +592,152 @@ export function PortfolioSection() {
             </div>
 
             {positions.map((position) => (
-            <Card key={position.positionMint}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <CardTitle className="text-base">
-                        {position.poolPair}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        Position: {position.positionMint.slice(0, 8)}...
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
+              <div key={position.positionMint} className="border-2 border-cyan-500/30 bg-zinc-950">
+                {/* Position Header */}
+                <div className="border-b-2 border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 to-transparent p-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <div className="font-mono text-lg font-bold text-white uppercase tracking-wider">
+                          {position.poolPair}
+                        </div>
+                        <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                          POSITION: {position.positionMint.slice(0, 8)}...
+                        </div>
+                      </div>
+                      <div className={`px-2 py-1 border-2 font-mono text-[10px] uppercase tracking-wider ${
                         position.status === "in-range"
-                          ? "default"
-                          : "destructive"
+                          ? "border-green-500 bg-green-500/10 text-green-400"
+                          : "border-amber-500 bg-amber-500/10 text-amber-400"
+                      }`}>
+                        {position.status === "in-range" ? "IN RANGE" : "OUT OF RANGE"}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono font-bold text-white uppercase tracking-wider">
+                        {getTokenSymbol(position.tokenX)}/{getTokenSymbol(position.tokenY)}
+                      </div>
+                      <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                        BINS: {position.lowerBinId} - {position.upperBinId}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Position Details */}
+                <div className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    {/* Token X Amount */}
+                    <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+                      <div className="text-[9px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
+                        {getTokenSymbol(position.tokenX)} AMOUNT
+                      </div>
+                      <div className="font-mono text-lg font-bold text-white">
+                        {position.totalXAmount === 0
+                          ? "0.0000"
+                          : (
+                              position.totalXAmount /
+                              Math.pow(
+                                10,
+                                selectedPool?.metadata?.extra?.tokenBaseDecimal || 6,
+                              )
+                            ).toFixed(4)}
+                      </div>
+                    </div>
+
+                    {/* Token Y Amount */}
+                    <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+                      <div className="text-[9px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
+                        {getTokenSymbol(position.tokenY)} AMOUNT
+                      </div>
+                      <div className="font-mono text-lg font-bold text-white">
+                        {position.totalYAmount === 0
+                          ? "0.0000"
+                          : (
+                              position.totalYAmount /
+                              Math.pow(
+                                10,
+                                selectedPool?.metadata?.extra?.tokenQuoteDecimal || 9,
+                              )
+                            ).toFixed(4)}
+                      </div>
+                    </div>
+
+                    {/* Token X Fees */}
+                    <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+                      <div className="text-[9px] font-mono text-green-400 uppercase tracking-wider mb-1">
+                        {getTokenSymbol(position.tokenX)} FEES
+                      </div>
+                      <div className="font-mono text-lg font-bold text-green-400">
+                        {position.feesX === 0
+                          ? "0.000000"
+                          : (
+                              position.feesX /
+                              Math.pow(
+                                10,
+                                selectedPool?.metadata?.extra?.tokenBaseDecimal || 6,
+                              )
+                            ).toFixed(6)}
+                      </div>
+                    </div>
+
+                    {/* Token Y Fees */}
+                    <div className="bg-[#0a0a0a] border-2 border-zinc-800 p-3">
+                      <div className="text-[9px] font-mono text-green-400 uppercase tracking-wider mb-1">
+                        {getTokenSymbol(position.tokenY)} FEES
+                      </div>
+                      <div className="font-mono text-lg font-bold text-green-400">
+                        {position.feesY === 0
+                          ? "0.000000"
+                          : (
+                              position.feesY /
+                              Math.pow(
+                                10,
+                                selectedPool?.metadata?.extra?.tokenQuoteDecimal || 9,
+                              )
+                            ).toFixed(6)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleClaimFees(position)}
+                      disabled={
+                        processingPosition === position.positionMint ||
+                        (position.feesX === 0 && position.feesY === 0)
                       }
+                      className="flex-1 h-10 border-2 border-green-500 bg-green-500/10 text-green-400 hover:bg-green-500/20 font-mono text-xs font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-all inline-flex items-center justify-center gap-2"
                     >
-                      {position.status === "in-range"
-                        ? "In Range"
-                        : "Out of Range"}
-                    </Badge>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">
-                      {getTokenSymbol(position.tokenX)}/
-                      {getTokenSymbol(position.tokenY)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Bins: {position.lowerBinId} - {position.upperBinId}
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">
-                      {getTokenSymbol(position.tokenX)} Amount
-                    </div>
-                    <div className="font-medium">
-                      {position.totalXAmount === 0
-                        ? "0.0000"
-                        : (
-                            position.totalXAmount /
-                            Math.pow(
-                              10,
-                              selectedPool?.metadata?.extra?.tokenBaseDecimal ||
-                                6,
-                            )
-                          ).toFixed(4)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">
-                      {getTokenSymbol(position.tokenY)} Amount
-                    </div>
-                    <div className="font-medium">
-                      {position.totalYAmount === 0
-                        ? "0.0000"
-                        : (
-                            position.totalYAmount /
-                            Math.pow(
-                              10,
-                              selectedPool?.metadata?.extra
-                                ?.tokenQuoteDecimal || 9,
-                            )
-                          ).toFixed(4)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">
-                      {getTokenSymbol(position.tokenX)} Fees
-                    </div>
-                    <div className="font-medium text-green-600">
-                      {position.feesX === 0
-                        ? "0.000000"
-                        : (
-                            position.feesX /
-                            Math.pow(
-                              10,
-                              selectedPool?.metadata?.extra?.tokenBaseDecimal ||
-                                6,
-                            )
-                          ).toFixed(6)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">
-                      {getTokenSymbol(position.tokenY)} Fees
-                    </div>
-                    <div className="font-medium text-green-600">
-                      {position.feesY === 0
-                        ? "0.000000"
-                        : (
-                            position.feesY /
-                            Math.pow(
-                              10,
-                              selectedPool?.metadata?.extra
-                                ?.tokenQuoteDecimal || 9,
-                            )
-                          ).toFixed(6)}
-                    </div>
+                      {processingPosition === position.positionMint ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          PROCESSING...
+                        </>
+                      ) : (
+                        "CLAIM FEES"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLiquidity(position)}
+                      disabled={processingPosition === position.positionMint}
+                      className="flex-1 h-10 border-2 border-red-500 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-mono text-xs font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-all inline-flex items-center justify-center gap-2"
+                    >
+                      {processingPosition === position.positionMint ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          PROCESSING...
+                        </>
+                      ) : (
+                        "REMOVE LIQUIDITY"
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleClaimFees(position)}
-                    disabled={
-                      processingPosition === position.positionMint ||
-                      (position.feesX === 0 && position.feesY === 0)
-                    }
-                  >
-                    {processingPosition === position.positionMint ? (
-                      <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Claim Fees"
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => handleRemoveLiquidity(position)}
-                    disabled={processingPosition === position.positionMint}
-                  >
-                    {processingPosition === position.positionMint ? (
-                      <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Remove Liquidity"
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
             ))}
           </div>
         )}

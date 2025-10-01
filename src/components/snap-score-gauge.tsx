@@ -239,6 +239,7 @@ export function SNAPScoreGauge({
 
 // Compact LCD gauge for template cards
 export function SNAPScoreBadge({ score }: { score: number }) {
+  const [showTooltip, setShowTooltip] = useState(false);
   const segments = 50; // 50 segments for 0-100 (each segment = 2 points)
   const filledSegments = Math.floor(score / 2);
 
@@ -253,15 +254,27 @@ export function SNAPScoreBadge({ score }: { score: number }) {
 
   const isFilled = (index: number) => index < filledSegments;
 
+  const getGrade = (score: number) => {
+    if (score >= 90) return "S";
+    if (score >= 80) return "A";
+    if (score >= 70) return "B";
+    if (score >= 60) return "C";
+    return "D";
+  };
+
   return (
-    <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
+    <div
+      className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded relative cursor-help"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
       {/* LCD Screen Label */}
       <div className="flex items-center justify-between">
         <span className="text-[9px] text-green-400 font-mono tracking-wider">
           SNAP SCORE
         </span>
         <span className="text-[9px] text-green-400 font-mono font-bold">
-          {score}/100
+          {score}/100 ({getGrade(score)})
         </span>
       </div>
 
@@ -274,6 +287,38 @@ export function SNAPScoreBadge({ score }: { score: number }) {
           />
         ))}
       </div>
+
+      {/* Tooltip */}
+      {showTooltip && (
+        <div className="absolute bottom-full left-0 right-0 mb-2 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+          <div className="border-2 border-green-500/30 bg-zinc-950 p-3 shadow-xl">
+            <div className="text-[10px] font-mono text-green-400 uppercase tracking-wider mb-2 border-b-2 border-green-500/30 pb-1">
+              /// AI-Powered Strategy Analysis
+            </div>
+            <div className="space-y-1.5 text-[9px] font-mono text-zinc-400 uppercase tracking-wider">
+              <div className="flex items-start gap-2">
+                <span className="text-green-400">▸</span>
+                <span><span className="text-green-400">Market Fit:</span> Pool volatility matching</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-400">▸</span>
+                <span><span className="text-green-400">Efficiency:</span> Capital & fee optimization</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-400">▸</span>
+                <span><span className="text-green-400">Safety:</span> IL risk assessment</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-400">▸</span>
+                <span><span className="text-green-400">Adaptability:</span> Market resilience</span>
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t-2 border-zinc-800 text-[8px] font-mono text-zinc-500 uppercase tracking-wider">
+              Grade: S (90+) • A (80+) • B (70+) • C (60+) • D (&lt;60)
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

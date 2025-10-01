@@ -123,17 +123,17 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   return (
     <div
-      className="cursor-pointer relative min-h-[420px]"
+      className={`cursor-pointer relative min-h-[420px] ${showDetails ? "pointer-events-none" : ""}`}
       style={{ perspective: "1000px" }}
-      onClick={handleCardClick}
-      onKeyDown={(e) => {
+      onClick={showDetails ? undefined : handleCardClick}
+      onKeyDown={showDetails ? undefined : (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           handleCardClick();
         }
       }}
       role="button"
-      tabIndex={0}
+      tabIndex={showDetails ? -1 : 0}
       aria-label={`Select ${template.name} template`}
     >
       {/* FRONT CARD */}
