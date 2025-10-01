@@ -10,18 +10,26 @@ import { TokenPairIcon } from "./token-pair-icon";
 import { useState } from "react";
 
 const TOKEN_IMAGES: Record<string, string> = {
-  'SOL': 'https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3',
-  'WSOL': 'https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3',
-  'USDT': 'https://file.coin98.com/images/untitled-2-CdtGnpYdjMHmHJNL.png',
-  'USDC': 'https://file.coin98.com/images/tdugg6fe0z74qafm-PJ4GMyP9c0PtzSUJ.png',
-  'PYUSD': 'https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png',
-  'C98': 'https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png',
+  SOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
+  WSOL: "https://coin98.s3.amazonaws.com/hUTZN237FzDLlfP3",
+  USDT: "https://file.coin98.com/images/untitled-2-CdtGnpYdjMHmHJNL.png",
+  USDC: "https://file.coin98.com/images/tdugg6fe0z74qafm-PJ4GMyP9c0PtzSUJ.png",
+  PYUSD:
+    "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png",
+  C98: "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png",
 };
 
-const DEFAULT_IMAGE = 'https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png';
+const DEFAULT_IMAGE =
+  "https://general-inventory.coin98.tech/images/%5Bsaros%5D-mark-purple(1)-115nWyZPJBI9hik4.png";
 
 export function UnifiedSelectionBar() {
-  const { selectedPool, selectedTemplate, setStep, getTokenPairSymbol, currentStep } = useAppStore();
+  const {
+    selectedPool,
+    selectedTemplate,
+    setStep,
+    getTokenPairSymbol,
+    currentStep,
+  } = useAppStore();
   const [showSimulator, setShowSimulator] = useState(false);
 
   // Don't show if nothing is selected
@@ -34,12 +42,13 @@ export function UnifiedSelectionBar() {
   const getTokenSymbols = () => {
     if (!selectedPool) return { tokenA: "Token", tokenB: "Token" };
     const pair = getTokenPairSymbol();
-    const [tokenA, tokenB] = pair.split('/');
+    const [tokenA, tokenB] = pair.split("/");
     return { tokenA, tokenB };
   };
 
   const { tokenA, tokenB } = getTokenSymbols();
-  const getTokenImage = (symbol: string) => TOKEN_IMAGES[symbol] || DEFAULT_IMAGE;
+  const getTokenImage = (symbol: string) =>
+    TOKEN_IMAGES[symbol] || DEFAULT_IMAGE;
 
   return (
     <>
@@ -55,8 +64,14 @@ export function UnifiedSelectionBar() {
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
                         <TokenPairIcon
-                          tokenA={{ symbol: tokenA, image: getTokenImage(tokenA) }}
-                          tokenB={{ symbol: tokenB, image: getTokenImage(tokenB) }}
+                          tokenA={{
+                            symbol: tokenA,
+                            image: getTokenImage(tokenA),
+                          }}
+                          tokenB={{
+                            symbol: tokenB,
+                            image: getTokenImage(tokenB),
+                          }}
                           size="md"
                         />
                       </div>

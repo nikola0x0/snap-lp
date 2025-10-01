@@ -1,6 +1,10 @@
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { sarosDLMM } from "./service.js";
-import { PYUSD_TOKEN_DEVNET, PYUSD_WSOL_POOL_DEVNET, WSOL_TOKEN_DEVNET } from "./constants.js";
+import {
+  PYUSD_TOKEN_DEVNET,
+  PYUSD_WSOL_POOL_DEVNET,
+  WSOL_TOKEN_DEVNET,
+} from "./constants.js";
 import { loadWalletFromCLI } from "./wallet.js";
 import { PositionInfo, RemoveLiquidityType } from "@saros-finance/dlmm-sdk";
 
@@ -12,10 +16,14 @@ const activeId = pairInfo.activeId;
 
 const range: [number, number] = [activeId - 10, activeId + 10];
 
-const positions = await sarosDLMM.getUserPositions({ payer: wallet.publicKey, pair });
+const positions = await sarosDLMM.getUserPositions({
+  payer: wallet.publicKey,
+  pair,
+});
 
 const positionList = positions.filter(
-  (item: PositionInfo) => !(item.upperBinId! < range[0] || item.lowerBinId! > range[1])
+  (item: PositionInfo) =>
+    !(item.upperBinId! < range[0] || item.lowerBinId! > range[1]),
 );
 
 if (!positionList.length) throw new Error("No position found in this range");
@@ -45,10 +53,12 @@ const { txs, txCreateAccount, txCloseAccount } =
 
 const allTxs: Transaction[] = [];
 if (txCreateAccount) allTxs.push(txCreateAccount as any);
-allTxs.push(...txs as any);
+allTxs.push(...(txs as any));
 if (txCloseAccount) allTxs.push(txCloseAccount as any);
 
-const {blockhash} = await sarosDLMM.connection.getLatestBlockhash({ commitment: "confirmed" });
+const { blockhash } = await sarosDLMM.connection.getLatestBlockhash({
+  commitment: "confirmed",
+});
 
 for (const tx of allTxs) {
   tx.recentBlockhash = blockhash;

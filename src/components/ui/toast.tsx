@@ -56,7 +56,9 @@ export function Toast({ message, type, onClose, duration = 5000 }: ToastProps) {
 let toastIdCounter = 0;
 
 export function useToast() {
-  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: ToastType }>>([]);
+  const [toasts, setToasts] = useState<
+    Array<{ id: number; message: string; type: ToastType }>
+  >([]);
 
   const showToast = (message: string, type: ToastType = "info") => {
     const id = Date.now() + toastIdCounter++;

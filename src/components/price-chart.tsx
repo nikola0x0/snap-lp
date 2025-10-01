@@ -31,7 +31,11 @@ interface PriceChartProps {
 
 type TimeRange = "1d" | "7d" | "30d";
 
-export function PriceChart({ poolAddress, symbol, className }: PriceChartProps) {
+export function PriceChart({
+  poolAddress,
+  symbol,
+  className,
+}: PriceChartProps) {
   const [priceData, setPriceData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,21 +56,25 @@ export function PriceChart({ poolAddress, symbol, className }: PriceChartProps) 
         setError(null);
 
         const days = timeRangeMap[timeRange];
-        
+
         // Get price history from DLMM service
-        const priceHistory = await realDlmmService.getPoolPriceData(poolAddress, days);
-        
+        const priceHistory = await realDlmmService.getPoolPriceData(
+          poolAddress,
+          days,
+        );
+
         if (priceHistory && priceHistory.length > 0) {
           setPriceData(priceHistory);
-          
+
           // Calculate current price and change
           const latest = priceHistory[priceHistory.length - 1];
           const earliest = priceHistory[0];
-          
+
           setCurrentPrice(latest?.price || 0);
-          
+
           if (earliest && latest) {
-            const change = ((latest.price - earliest.price) / earliest.price) * 100;
+            const change =
+              ((latest.price - earliest.price) / earliest.price) * 100;
             setPriceChange(change);
           }
         } else {

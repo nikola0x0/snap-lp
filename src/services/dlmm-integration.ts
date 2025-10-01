@@ -7,11 +7,12 @@ import {
   findPosition,
   getBinRange,
   getMaxBinArray,
-  getMaxPosition
+  getMaxPosition,
 } from "@saros-finance/dlmm-sdk";
 import bigDecimal from "js-big-decimal";
 
-const RPC_ENDPOINT = "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
+const RPC_ENDPOINT =
+  "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
 
 // DLMM Pool Configuration
 export interface DLMMPoolConfig {
@@ -55,10 +56,12 @@ export class DLMMIntegrationService {
   private dlmm: LiquidityBookServices;
 
   constructor(connection?: Connection) {
-    this.connection = connection || new Connection(RPC_ENDPOINT, {
-      commitment: "confirmed",
-      wsEndpoint: undefined,
-    });
+    this.connection =
+      connection ||
+      new Connection(RPC_ENDPOINT, {
+        commitment: "confirmed",
+        wsEndpoint: undefined,
+      });
 
     this.dlmm = new LiquidityBookServices({
       mode: MODE.DEVNET,
@@ -75,7 +78,7 @@ export class DLMMIntegrationService {
     poolConfig: DLMMPoolConfig,
     strategyParams: DLMMStrategyParams,
     wallet: any, // Wallet adapter wallet
-    sendTransaction?: (transaction: any, connection: any) => Promise<string>
+    sendTransaction?: (transaction: any, connection: any) => Promise<string>,
   ): Promise<DLMMTransactionResult> {
     try {
       console.log("🚀 Starting DLMM liquidity addition...");
@@ -87,11 +90,13 @@ export class DLMMIntegrationService {
       }
 
       // Get latest blockhash
-      const { blockhash } = await this.connection.getLatestBlockhash({ commitment: "confirmed" });
-      
+      const { blockhash } = await this.connection.getLatestBlockhash({
+        commitment: "confirmed",
+      });
+
       const pair = new PublicKey(poolConfig.address);
       const pairInfo = await this.dlmm.getPairAccount(pair);
-      
+
       if (!pairInfo) {
         throw new Error("Pool pair account not found");
       }
@@ -100,7 +105,7 @@ export class DLMMIntegrationService {
       const txQueue: Transaction[] = [];
       const activeBin = pairInfo.activeId;
       const binArrayList = getMaxBinArray(binRange, activeBin);
-      
+
       // Initialize bin arrays and vault info
       const binsAndVaultsTx = new Transaction();
 
@@ -142,10 +147,13 @@ export class DLMMIntegrationService {
 
       // Get positions and liquidity distribution
       const maxPositionList = getMaxPosition(binRange, activeBin);
-      const userPositions = await this.dlmm.getUserPositions({ payer: wallet.publicKey, pair });
-      const maxLiquidityDistribution = createUniformDistribution({ 
-        shape: strategyParams.liquidityShape, 
-        binRange 
+      const userPositions = await this.dlmm.getUserPositions({
+        payer: wallet.publicKey,
+        pair,
+      });
+      const maxLiquidityDistribution = createUniformDistribution({
+        shape: strategyParams.liquidityShape,
+        binRange,
       });
 
       const positionMints: string[] = [];
@@ -153,20 +161,32 @@ export class DLMMIntegrationService {
       // Create positions and add liquidity
       const maxLiquidityDistributions = await Promise.all(
         maxPositionList.map(async (position) => {
-          const { range, binLower, binUpper } = getBinRange(position, activeBin);
-          const currentPosition = userPositions.find(findPosition(position, activeBin));
+          const { range, binLower, binUpper } = getBinRange(
+            position,
+            activeBin,
+          );
+          const currentPosition = userPositions.find(
+            findPosition(position, activeBin),
+          );
 
           const startIndex =
-            maxLiquidityDistribution.findIndex((item) => item.relativeBinId === range[0]) ?? 0;
+            maxLiquidityDistribution.findIndex(
+              (item) => item.relativeBinId === range[0],
+            ) ?? 0;
           const endIndex =
-            (maxLiquidityDistribution.findIndex((item) => item.relativeBinId === range[1]) ?? maxLiquidityDistribution.length - 1) + 1;
+            (maxLiquidityDistribution.findIndex(
+              (item) => item.relativeBinId === range[1],
+            ) ?? maxLiquidityDistribution.length - 1) + 1;
 
-          const liquidityDistribution = maxLiquidityDistribution.slice(startIndex, endIndex);
+          const liquidityDistribution = maxLiquidityDistribution.slice(
+            startIndex,
+            endIndex,
+          );
 
           const binArray = binArrayList.find(
             (item) =>
               item.binArrayLowerIndex * 256 <= binLower &&
-              (item.binArrayUpperIndex + 1) * 256 > binUpper
+              (item.binArrayUpperIndex + 1) * 256 > binUpper,
           )!;
 
           const binArrayLower = await this.dlmm.getBinArray({
@@ -214,27 +234,31 @@ export class DLMMIntegrationService {
             binArrayLower: binArrayLower.toString(),
             binArrayUpper: binArrayUpper.toString(),
           };
-        })
+        }),
       );
 
       // Add liquidity to positions
       await Promise.all(
         maxLiquidityDistributions.map(async (maxLiquidityDistribution) => {
-          const { positionMint, liquidityDistribution, binArrayLower, binArrayUpper } =
-            maxLiquidityDistribution;
+          const {
+            positionMint,
+            liquidityDistribution,
+            binArrayLower,
+            binArrayUpper,
+          } = maxLiquidityDistribution;
 
           const addLiquidityTx = new Transaction();
 
           // Convert amounts with proper decimals
           const amountX = Number(
-            new bigDecimal(Math.pow(10, poolConfig.baseToken.decimals)).multiply(
-              new bigDecimal(strategyParams.amountX)
-            ).getValue()
+            new bigDecimal(Math.pow(10, poolConfig.baseToken.decimals))
+              .multiply(new bigDecimal(strategyParams.amountX))
+              .getValue(),
           );
           const amountY = Number(
-            new bigDecimal(Math.pow(10, poolConfig.quoteToken.decimals)).multiply(
-              new bigDecimal(strategyParams.amountY)
-            ).getValue()
+            new bigDecimal(Math.pow(10, poolConfig.quoteToken.decimals))
+              .multiply(new bigDecimal(strategyParams.amountY))
+              .getValue(),
           );
 
           await this.dlmm.addLiquidityIntoPosition({
@@ -252,12 +276,12 @@ export class DLMMIntegrationService {
           addLiquidityTx.recentBlockhash = blockhash;
           addLiquidityTx.feePayer = wallet.publicKey;
           txQueue.push(addLiquidityTx);
-        })
+        }),
       );
 
       // Execute transactions
       const signatures: string[] = [];
-      
+
       if (sendTransaction) {
         // Use browser wallet adapter
         for (let i = 0; i < txQueue.length; i++) {
@@ -266,29 +290,35 @@ export class DLMMIntegrationService {
             console.log(`Skipping undefined transaction at index ${i}`);
             continue;
           }
-          
+
           try {
-            console.log(`📝 Sending transaction ${i + 1}/${txQueue.length} through wallet...`);
-            
+            console.log(
+              `📝 Sending transaction ${i + 1}/${txQueue.length} through wallet...`,
+            );
+
             // Send through wallet adapter (will prompt user for signature)
             const signature = await sendTransaction(tx, this.connection);
-            
+
             console.log(`📄 Transaction sent: ${signature.slice(0, 8)}...`);
             console.log(`⏳ Confirming transaction...`);
-            
+
             const confirmation = await this.connection.confirmTransaction({
               signature,
               blockhash: tx.recentBlockhash!,
-              lastValidBlockHeight: (await this.connection.getLatestBlockhash()).lastValidBlockHeight
+              lastValidBlockHeight: (await this.connection.getLatestBlockhash())
+                .lastValidBlockHeight,
             });
-            
+
             if (confirmation.value.err) {
-              throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+              throw new Error(
+                `Transaction failed: ${JSON.stringify(confirmation.value.err)}`,
+              );
             }
-            
+
             signatures.push(signature);
-            console.log(`✅ Transaction ${i + 1} confirmed: ${signature.slice(0, 8)}...`);
-            
+            console.log(
+              `✅ Transaction ${i + 1} confirmed: ${signature.slice(0, 8)}...`,
+            );
           } catch (error) {
             console.error(`❌ Transaction ${i + 1} failed:`, error);
             throw error;
@@ -303,33 +333,40 @@ export class DLMMIntegrationService {
             console.log(`Skipping undefined transaction at index ${i}`);
             continue;
           }
-          
+
           try {
-            console.log(`📝 Executing transaction ${i + 1}/${txQueue.length}...`);
-            
+            console.log(
+              `📝 Executing transaction ${i + 1}/${txQueue.length}...`,
+            );
+
             // Direct signing - requires wallet to have sign method
             if (wallet.signTransaction) {
               await wallet.signTransaction(tx);
             } else {
               throw new Error("Wallet does not support transaction signing");
             }
-            
-            const signature = await this.connection.sendRawTransaction(tx.serialize(), {
-              skipPreflight: false,
-              preflightCommitment: "confirmed",
-            });
-            
+
+            const signature = await this.connection.sendRawTransaction(
+              tx.serialize(),
+              {
+                skipPreflight: false,
+                preflightCommitment: "confirmed",
+              },
+            );
+
             const confirmation = await this.connection.confirmTransaction({
               signature,
               blockhash: tx.recentBlockhash!,
-              lastValidBlockHeight: (await this.connection.getLatestBlockhash()).lastValidBlockHeight
+              lastValidBlockHeight: (await this.connection.getLatestBlockhash())
+                .lastValidBlockHeight,
             });
-            
+
             if (confirmation.value.err) throw confirmation.value.err;
-            
+
             signatures.push(signature);
-            console.log(`✅ Transaction ${i + 1} confirmed: ${signature.slice(0, 8)}...`);
-            
+            console.log(
+              `✅ Transaction ${i + 1} confirmed: ${signature.slice(0, 8)}...`,
+            );
           } catch (error) {
             console.error(`❌ Transaction ${i + 1} failed:`, error);
             throw error;
@@ -346,7 +383,6 @@ export class DLMMIntegrationService {
         signatures,
         positionMints,
       };
-
     } catch (error) {
       console.error("❌ DLMM liquidity addition failed:", error);
       return {
@@ -390,16 +426,18 @@ export class DLMMIntegrationService {
     try {
       // Test with the known PYUSD/WSOL pool
       const testPoolAddress = "H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ";
-      const pairAccount = await this.dlmm.getPairAccount(new PublicKey(testPoolAddress));
-      
+      const pairAccount = await this.dlmm.getPairAccount(
+        new PublicKey(testPoolAddress),
+      );
+
       return {
         success: true,
-        message: `DLMM service connected. Test pool active ID: ${pairAccount?.activeId || 'N/A'}`,
+        message: `DLMM service connected. Test pool active ID: ${pairAccount?.activeId || "N/A"}`,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: `Connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
     }
   }

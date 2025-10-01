@@ -1,7 +1,8 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
 
-const RPC_ENDPOINT = "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
+const RPC_ENDPOINT =
+  "https://devnet.helius-rpc.com/?api-key=f831b443-8520-4f01-8228-59af9bb829b7";
 
 // Real DLMM SDK types
 interface RealPoolMetadata {
@@ -44,7 +45,7 @@ const KNOWN_POOLS = [
       symbol: "WSOL",
       name: "Wrapped SOL",
       decimals: 9,
-    }
+    },
   },
   {
     address: "DMb8Xta7STwCkHwdWQSazjoJWG1vnNYkk2Pnenj9kPV",
@@ -59,7 +60,7 @@ const KNOWN_POOLS = [
       symbol: "USDT",
       name: "Tether USD",
       decimals: 6,
-    }
+    },
   },
   {
     address: "3jPMRAaibizCW1nZhyyuSsDSy7beSP4yAfJZtxCBsYuD",
@@ -74,7 +75,7 @@ const KNOWN_POOLS = [
       symbol: "WSOL",
       name: "Wrapped SOL",
       decimals: 9,
-    }
+    },
   },
   {
     address: "7zzwywSok1HLmpqd2SpctCUbDR6oV4RYZmmMPgNxWDs5",
@@ -89,7 +90,7 @@ const KNOWN_POOLS = [
       symbol: "WSOL",
       name: "Wrapped SOL",
       decimals: 9,
-    }
+    },
   },
 ];
 
@@ -111,10 +112,12 @@ export class RealDLMMService {
   private readonly MIN_REQUEST_INTERVAL = 100; // 100ms between requests
 
   constructor(connection?: Connection) {
-    this.connection = connection || new Connection(RPC_ENDPOINT, {
-      commitment: "confirmed",
-      wsEndpoint: undefined,
-    });
+    this.connection =
+      connection ||
+      new Connection(RPC_ENDPOINT, {
+        commitment: "confirmed",
+        wsEndpoint: undefined,
+      });
 
     this.dlmm = new LiquidityBookServices({
       mode: MODE.DEVNET,
@@ -129,7 +132,9 @@ export class RealDLMMService {
     const now = Date.now();
     const elapsed = now - this.lastRequestTime;
     if (elapsed < this.MIN_REQUEST_INTERVAL) {
-      await new Promise(resolve => setTimeout(resolve, this.MIN_REQUEST_INTERVAL - elapsed));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.MIN_REQUEST_INTERVAL - elapsed),
+      );
     }
     this.lastRequestTime = Date.now();
   }
@@ -137,9 +142,12 @@ export class RealDLMMService {
   // Get all DLMM pools using known pool addresses
   async getPools() {
     console.log("🔍 Fetching real DLMM pools from SDK...");
-    
+
     // Check cache first
-    if (this.poolsCache && (Date.now() - this.poolsCache.timestamp < this.POOLS_CACHE_DURATION)) {
+    if (
+      this.poolsCache &&
+      Date.now() - this.poolsCache.timestamp < this.POOLS_CACHE_DURATION
+    ) {
       console.log("📄 Returning cached pools data");
       return this.poolsCache.data;
     }
@@ -148,18 +156,22 @@ export class RealDLMMService {
 
     try {
       console.log(`📊 Checking ${KNOWN_POOLS.length} known pool addresses`);
-      
+
       const poolsWithMetadata = [];
-      
+
       for (const pool of KNOWN_POOLS) {
         try {
           await this.throttleRequest();
-          
+
           // Get pair account information
-          const pairAccount = await this.dlmm.getPairAccount(new PublicKey(pool.address));
-          
+          const pairAccount = await this.dlmm.getPairAccount(
+            new PublicKey(pool.address),
+          );
+
           if (!pairAccount) {
-            console.log(`⏭️  Skipping pool ${pool.address.slice(0, 8)}... (no pair account)`);
+            console.log(
+              `⏭️  Skipping pool ${pool.address.slice(0, 8)}... (no pair account)`,
+            );
             continue;
           }
 
@@ -185,10 +197,12 @@ export class RealDLMMService {
             extra: {
               tokenBaseDecimal: pool.baseToken.decimals,
               tokenQuoteDecimal: pool.quoteToken.decimals,
-            }
+            },
           };
 
-          console.log(`✅ Found active pool ${pool.address.slice(0, 8)}... (${pool.baseToken.symbol}/${pool.quoteToken.symbol})`);
+          console.log(
+            `✅ Found active pool ${pool.address.slice(0, 8)}... (${pool.baseToken.symbol}/${pool.quoteToken.symbol})`,
+          );
 
           poolsWithMetadata.push({
             address: pool.address,
@@ -199,11 +213,12 @@ export class RealDLMMService {
               activeId: pairAccount.activeId,
               tokenMintX: pairAccount.tokenMintX.toString(),
               tokenMintY: pairAccount.tokenMintY.toString(),
-            }
+            },
           });
-          
         } catch (error) {
-          console.log(`❌ Failed to fetch data for pool ${pool.address}: ${error}`);
+          console.log(
+            `❌ Failed to fetch data for pool ${pool.address}: ${error}`,
+          );
           continue;
         }
       }
@@ -211,18 +226,23 @@ export class RealDLMMService {
       const result = {
         pools: poolsWithMetadata,
         totalCount: poolsWithMetadata.length,
-        processedCount: KNOWN_POOLS.length
+        processedCount: KNOWN_POOLS.length,
       };
 
       // Cache the result
       this.poolsCache = { data: result, timestamp: Date.now() };
-      
-      console.log(`✅ Successfully fetched ${result.totalCount} DLMM pools with metadata`);
+
+      console.log(
+        `✅ Successfully fetched ${result.totalCount} DLMM pools with metadata`,
+      );
       return result;
-      
     } catch (error) {
       console.error("❌ Error fetching DLMM pools:", error);
-      return { pools: [], totalCount: 0, error: error instanceof Error ? error.message : 'Unknown error' };
+      return {
+        pools: [],
+        totalCount: 0,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
   }
 
@@ -230,8 +250,8 @@ export class RealDLMMService {
   async getPoolPriceData(poolAddress: string, days: number = 7) {
     const cacheKey = `${poolAddress}-${days}`;
     const cached = this.priceCache.get(cacheKey);
-    
-    if (cached && (Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION)) {
+
+    if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
       return cached.data;
     }
 
@@ -243,30 +263,31 @@ export class RealDLMMService {
       const now = Date.now();
       const millisecondsPerDay = 24 * 60 * 60 * 1000;
       const dataPoints = Math.min(days * 24, 168); // Max 1 week of hourly data
-      
+
       const priceData = [];
       let basePrice = 100 + Math.random() * 50; // Start with a random base price
-      
+
       for (let i = dataPoints - 1; i >= 0; i--) {
-        const time = new Date(now - (i * millisecondsPerDay / 24)).toISOString();
-        
+        const time = new Date(
+          now - (i * millisecondsPerDay) / 24,
+        ).toISOString();
+
         // Add some realistic price movement
         const change = (Math.random() - 0.5) * 0.05; // ±2.5% change
-        basePrice *= (1 + change);
-        
+        basePrice *= 1 + change;
+
         priceData.push({
           time,
           price: basePrice,
           volume: Math.random() * 1000000,
-          activeBin: 8388608 + Math.floor((Math.random() - 0.5) * 100)
+          activeBin: 8388608 + Math.floor((Math.random() - 0.5) * 100),
         });
       }
 
       const result = priceData;
       this.priceCache.set(cacheKey, { data: result, timestamp: Date.now() });
-      
+
       return result;
-      
     } catch (error) {
       console.error("Error fetching pool price data:", error);
       return [];
@@ -277,8 +298,8 @@ export class RealDLMMService {
   async getPoolCurrentPrice(poolAddress: string) {
     const cacheKey = `current-${poolAddress}`;
     const cached = this.priceCache.get(cacheKey);
-    
-    if (cached && (Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION)) {
+
+    if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
       return cached.data;
     }
 
@@ -286,8 +307,10 @@ export class RealDLMMService {
 
     try {
       // Get pair account to calculate current price
-      const pairAccount = await this.dlmm.getPairAccount(new PublicKey(poolAddress));
-      
+      const pairAccount = await this.dlmm.getPairAccount(
+        new PublicKey(poolAddress),
+      );
+
       if (!pairAccount) {
         throw new Error("Pool pair account not found");
       }
@@ -296,11 +319,11 @@ export class RealDLMMService {
       // This is a simplified calculation - in reality you'd need to consider bin step and other factors
       const activeBin = pairAccount.activeId;
       const binStep = pairAccount.binStep;
-      
+
       // Convert active bin to price (simplified)
       // Real price calculation would be more complex and use proper DLMM formulas
       const price = (1 + binStep / 10000) ** (activeBin - 8388608);
-      
+
       const result = {
         price: Math.abs(price), // Ensure positive price
         activeBin,
@@ -311,7 +334,6 @@ export class RealDLMMService {
 
       this.priceCache.set(cacheKey, { data: result, timestamp: Date.now() });
       return result;
-      
     } catch (error) {
       console.error("Error fetching pool current price:", error);
       // Return fallback price data
@@ -332,14 +354,14 @@ export class RealDLMMService {
     try {
       // Get basic pool data
       const currentPrice = await this.getPoolCurrentPrice(poolAddress);
-      
+
       // Generate realistic metrics for demo
       const volume24h = Math.random() * 10000000; // Random volume
       const volume7d = volume24h * 7 * (0.8 + Math.random() * 0.4); // 7-day volume
       const tvl = Math.random() * 5000000; // Random TVL
       const fees24h = volume24h * 0.003; // 0.3% fee
-      const apr = (fees24h * 365 / tvl) * 100; // Annualized
-      
+      const apr = ((fees24h * 365) / tvl) * 100; // Annualized
+
       return {
         liquidity: tvl,
         volume24h,
@@ -350,7 +372,6 @@ export class RealDLMMService {
         priceChange24h: (Math.random() - 0.5) * 10, // ±5%
         activeBin: currentPrice.activeBin || 8388608,
       };
-      
     } catch (error) {
       console.error("Error fetching pool metrics:", error);
       return {
@@ -374,12 +395,14 @@ export class RealDLMMService {
       // Generate realistic volume data for demo
       const now = Date.now();
       const millisecondsPerDay = 24 * 60 * 60 * 1000;
-      
+
       const volumeData = [];
       for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now - (i * millisecondsPerDay)).toISOString().split('T')[0];
+        const date = new Date(now - i * millisecondsPerDay)
+          .toISOString()
+          .split("T")[0];
         const volume = Math.random() * 1000000;
-        
+
         volumeData.push({
           date,
           volume,
@@ -388,7 +411,6 @@ export class RealDLMMService {
       }
 
       return volumeData;
-      
     } catch (error) {
       console.error("Error fetching volume history:", error);
       return [];
@@ -403,17 +425,19 @@ export class RealDLMMService {
       // Generate realistic liquidity data for demo
       const now = Date.now();
       const millisecondsPerDay = 24 * 60 * 60 * 1000;
-      
+
       const liquidityData = [];
       let baseLiquidity = 1000000 + Math.random() * 4000000;
-      
+
       for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now - (i * millisecondsPerDay)).toISOString().split('T')[0];
-        
+        const date = new Date(now - i * millisecondsPerDay)
+          .toISOString()
+          .split("T")[0];
+
         // Add some realistic liquidity movement
         const change = (Math.random() - 0.5) * 0.1; // ±5% change
-        baseLiquidity *= (1 + change);
-        
+        baseLiquidity *= 1 + change;
+
         liquidityData.push({
           date,
           liquidity: baseLiquidity,
@@ -422,7 +446,6 @@ export class RealDLMMService {
       }
 
       return liquidityData;
-      
     } catch (error) {
       console.error("Error fetching liquidity history:", error);
       return [];
@@ -432,41 +455,44 @@ export class RealDLMMService {
   // Test connection using real DLMM SDK
   async testConnection() {
     console.log("🧪 Testing DLMM connection...");
-    
+
     try {
       await this.throttleRequest();
-      
+
       // Test connection by trying to get info about a known pool
       const testPool = KNOWN_POOLS[0];
-      const pairAccount = await this.dlmm.getPairAccount(new PublicKey(testPool.address));
-      
+      const pairAccount = await this.dlmm.getPairAccount(
+        new PublicKey(testPool.address),
+      );
+
       const result = {
         success: true,
         connection: "Connected to Solana RPC",
-        dlmmService: "DLMM SDK initialized successfully", 
+        dlmmService: "DLMM SDK initialized successfully",
         poolsFound: KNOWN_POOLS.length,
-        testPool: pairAccount ? {
-          address: testPool.address,
-          baseMint: testPool.baseToken.mintAddress,
-          quoteMint: testPool.quoteToken.mintAddress,
-          activeId: pairAccount.activeId,
-          binStep: pairAccount.binStep,
-        } : null,
-        timestamp: new Date().toISOString()
+        testPool: pairAccount
+          ? {
+              address: testPool.address,
+              baseMint: testPool.baseToken.mintAddress,
+              quoteMint: testPool.quoteToken.mintAddress,
+              activeId: pairAccount.activeId,
+              binStep: pairAccount.binStep,
+            }
+          : null,
+        timestamp: new Date().toISOString(),
       };
-      
+
       console.log("✅ DLMM connection test successful");
       return result;
-      
     } catch (error) {
       console.error("❌ DLMM connection test failed:", error);
-      
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
         connection: "Failed to connect to Solana RPC",
         dlmmService: "DLMM SDK initialization failed",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -486,14 +512,14 @@ export class RealDLMMService {
     // Fallback to known tokens map (Devnet tokens)
     const knownTokens: Record<string, string> = {
       // SOL
-      "So11111111111111111111111111111111111111112": "WSOL",
+      So11111111111111111111111111111111111111112: "WSOL",
       // Stablecoins (Devnet)
-      "mnt3Mc5iK8UNZheyPmS9UQKrM6Rz5s4d8x63BUv22F9": "USDT",
-      "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM": "PYUSD",
-      "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr": "USDC",
+      mnt3Mc5iK8UNZheyPmS9UQKrM6Rz5s4d8x63BUv22F9: "USDT",
+      CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM: "PYUSD",
+      Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr: "USDC",
       // Test tokens (Devnet)
       "9WNGiZEescNbYYRh8iFNLwXerk6Cxvs4Lo5tckQDpJDt": "TKN1",
-      "FAg5dMk72hEBkohyirpvVmiTQmoRNwZsKhYF4ar8EcUL": "TKN2",
+      FAg5dMk72hEBkohyirpvVmiTQmoRNwZsKhYF4ar8EcUL: "TKN2",
     };
 
     return knownTokens[mintAddress] || `TOKEN_${mintAddress.slice(0, 8)}`;

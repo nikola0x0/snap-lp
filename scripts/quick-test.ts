@@ -4,7 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 async function test() {
   const dlmm = new LiquidityBookServices({
     mode: MODE.DEVNET,
-    options: { rpcUrl: "https://api.devnet.solana.com" }
+    options: { rpcUrl: "https://api.devnet.solana.com" },
   });
 
   const pool = new PublicKey("H9EPqQKCvv9ddzK6KHjo8vvUPMLMJXmMmru9KUYNaDFQ");

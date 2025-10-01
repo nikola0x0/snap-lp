@@ -10,13 +10,13 @@ async function testAllData() {
   console.log("🔍 Testing Data Availability for AI Strategy Advisor\n");
 
   // 1. DLMM SDK Data
-  console.log("=" .repeat(50));
+  console.log("=".repeat(50));
   console.log("1️⃣  DLMM SDK DATA (Available)");
-  console.log("=" .repeat(50));
+  console.log("=".repeat(50));
 
   const dlmm = new LiquidityBookServices({
     mode: MODE.DEVNET,
-    options: { rpcUrl: "https://api.devnet.solana.com" }
+    options: { rpcUrl: "https://api.devnet.solana.com" },
   });
 
   const pool = new PublicKey(POOL);
@@ -26,7 +26,9 @@ async function testAllData() {
   console.log(`  - Active Bin ID: ${pair.activeId}`);
   console.log(`  - Bin Step: ${pair.binStep}`);
   console.log(`  - Base Factor: ${pair.staticFeeParameters.baseFactor}`);
-  console.log(`  - Volatility: ${pair.dynamicFeeParameters.volatilityAccumulator}`);
+  console.log(
+    `  - Volatility: ${pair.dynamicFeeParameters.volatilityAccumulator}`,
+  );
   console.log(`  - Token X: ${pair.tokenMintX}`);
   console.log(`  - Token Y: ${pair.tokenMintY}`);
 
@@ -53,7 +55,8 @@ async function testAllData() {
   console.log("=".repeat(50));
 
   try {
-    const binanceUrl = "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT";
+    const binanceUrl =
+      "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT";
     const binResponse = await fetch(binanceUrl);
     const binData = await binResponse.json();
 
@@ -74,7 +77,8 @@ async function testAllData() {
   console.log("=".repeat(50));
 
   try {
-    const cgUrl = "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true";
+    const cgUrl =
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true";
     const cgResponse = await fetch(cgUrl);
     const cgData = await cgResponse.json();
 

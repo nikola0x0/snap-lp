@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!poolAddress) {
       return NextResponse.json(
         { success: false, error: "Pool address required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     try {
       const binanceResponse = await fetch(
         "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT",
-        { next: { revalidate: 60 } } // Cache for 1 minute
+        { next: { revalidate: 60 } }, // Cache for 1 minute
       );
       marketData = await binanceResponse.json();
     } catch (e) {
@@ -61,13 +61,17 @@ export async function POST(request: NextRequest) {
         activeId: pairAccount.activeId,
         binStep: pairAccount.binStep,
         baseFactor: pairAccount.staticFeeParameters.baseFactor,
-        volatilityAccumulator: pairAccount.dynamicFeeParameters.volatilityAccumulator,
+        volatilityAccumulator:
+          pairAccount.dynamicFeeParameters.volatilityAccumulator,
         tokenX: pairAccount.tokenMintX,
         tokenY: pairAccount.tokenMintY,
       },
       template: templateConfig || {
         name: "Conservative Stable",
-        binRange: { min: pairAccount.activeId - 5, max: pairAccount.activeId + 5 },
+        binRange: {
+          min: pairAccount.activeId - 5,
+          max: pairAccount.activeId + 5,
+        },
         riskLevel: "Low",
       },
       market: {
@@ -156,7 +160,8 @@ Important: Return ONLY the JSON object, no other text.`;
         },
         grade: "A",
         confidence: "medium",
-        reasoning: "AI parsing failed. Using estimated score based on template parameters.",
+        reasoning:
+          "AI parsing failed. Using estimated score based on template parameters.",
       };
     }
 
@@ -165,7 +170,7 @@ Important: Return ONLY the JSON object, no other text.`;
     Object.keys(snapScore.components).forEach((key) => {
       snapScore.components[key] = Math.min(
         25,
-        Math.max(0, snapScore.components[key])
+        Math.max(0, snapScore.components[key]),
       );
     });
 
@@ -185,9 +190,12 @@ Important: Return ONLY the JSON object, no other text.`;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to calculate SNAP Score",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to calculate SNAP Score",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

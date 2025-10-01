@@ -66,11 +66,9 @@ const SWAP_POOLS = [
 ];
 
 const TOKEN_IMAGES: Record<string, string> = {
-  WSOL:
-    "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+  WSOL: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
   PYUSD: "https://s2.coinmarketcap.com/static/img/coins/64x64/27772.png",
-  USDT:
-    "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
+  USDT: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
 };
 
 export function SwapSectionSimple() {
@@ -84,7 +82,7 @@ export function SwapSectionSimple() {
   const [loading, setLoading] = useState(false);
   const [quoting, setQuoting] = useState(false);
   const [tokenBalances, setTokenBalances] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const [swapForY, setSwapForY] = useState(true);
 
@@ -113,12 +111,10 @@ export function SwapSectionSimple() {
         for (const mint of uniqueTokens) {
           try {
             const tokenMint = new PublicKey(mint);
-            const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-              publicKey,
-              {
+            const tokenAccounts =
+              await connection.getParsedTokenAccountsByOwner(publicKey, {
                 mint: tokenMint,
-              }
-            );
+              });
 
             if (tokenAccounts.value.length > 0) {
               const balance =
@@ -126,7 +122,7 @@ export function SwapSectionSimple() {
                   .uiAmount;
               const symbol =
                 SWAP_POOLS.find(
-                  (p) => p.tokenX.mint === mint || p.tokenY.mint === mint
+                  (p) => p.tokenX.mint === mint || p.tokenY.mint === mint,
                 )?.tokenX.mint === mint
                   ? SWAP_POOLS.find((p) => p.tokenX.mint === mint)?.tokenX
                       .symbol
@@ -174,7 +170,7 @@ export function SwapSectionSimple() {
           ? selectedPool.tokenX.decimals
           : selectedPool.tokenY.decimals;
         const amountInLamports = BigInt(
-          Math.floor(amount * Math.pow(10, decimals))
+          Math.floor(amount * Math.pow(10, decimals)),
         );
 
         const quote = await dlmmService.getQuote({
@@ -226,7 +222,7 @@ export function SwapSectionSimple() {
     if (amount < minAmount) {
       showToast(
         `Minimum swap amount is ${minAmount} ${fromToken.symbol}`,
-        "error"
+        "error",
       );
       return;
     }
@@ -245,7 +241,7 @@ export function SwapSectionSimple() {
         ? selectedPool.tokenX.decimals
         : selectedPool.tokenY.decimals;
       const amountInLamports = BigInt(
-        Math.floor(amount * Math.pow(10, decimals))
+        Math.floor(amount * Math.pow(10, decimals)),
       );
 
       hideToast(toastId);
@@ -294,7 +290,7 @@ export function SwapSectionSimple() {
 
       showToast(
         `✅ Swap successful! ${fromAmount} ${fromToken.symbol} → ${toAmount} ${toToken.symbol}`,
-        "success"
+        "success",
       );
 
       setFromAmount("");
@@ -314,7 +310,7 @@ export function SwapSectionSimple() {
         `❌ Swap failed: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);

@@ -35,11 +35,11 @@ export function useDLMMDeploy() {
   const deployToPool = async (
     selectedPool: SelectedPool,
     selectedTemplate: SelectedTemplate,
-    deployConfig: DeployConfig
+    deployConfig: DeployConfig,
   ) => {
     try {
       console.log("🚀 Starting DLMM deployment with real wallet...");
-      
+
       if (!wallet || !publicKey || !sendTransaction) {
         throw new Error("Wallet not connected or missing sendTransaction");
       }
@@ -51,7 +51,9 @@ export function useDLMMDeploy() {
       setIsDeploying(true);
 
       // Map template name to strategy type
-      const getStrategyType = (templateName: string): "conservative" | "balanced" | "aggressive" => {
+      const getStrategyType = (
+        templateName: string,
+      ): "conservative" | "balanced" | "aggressive" => {
         const name = templateName.toLowerCase();
         if (name.includes("conservative")) return "conservative";
         if (name.includes("aggressive")) return "aggressive";
@@ -59,9 +61,15 @@ export function useDLMMDeploy() {
       };
 
       console.log("📋 Deployment Parameters:");
-      console.log("- Pool:", `${selectedPool.baseToken.symbol}/${selectedPool.quoteToken.symbol} (${selectedPool.address.slice(0, 8)}...)`);
+      console.log(
+        "- Pool:",
+        `${selectedPool.baseToken.symbol}/${selectedPool.quoteToken.symbol} (${selectedPool.address.slice(0, 8)}...)`,
+      );
       console.log("- Strategy:", selectedTemplate.name);
-      console.log("- Amounts:", `${deployConfig.tokenXAmount} ${selectedPool.baseToken.symbol}, ${deployConfig.tokenYAmount} ${selectedPool.quoteToken.symbol}`);
+      console.log(
+        "- Amounts:",
+        `${deployConfig.tokenXAmount} ${selectedPool.baseToken.symbol}, ${deployConfig.tokenYAmount} ${selectedPool.quoteToken.symbol}`,
+      );
       console.log("- Wallet:", publicKey.toString().slice(0, 8) + "...");
 
       // Get strategy parameters
@@ -102,7 +110,7 @@ export function useDLMMDeploy() {
         poolConfig,
         strategyParams,
         wallet,
-        sendTransaction
+        sendTransaction,
       );
 
       if (result.success) {
@@ -119,16 +127,19 @@ export function useDLMMDeploy() {
       } else {
         throw new Error(result.error || "Deployment failed");
       }
-
     } catch (error) {
       console.error("❌ DLMM deployment failed:", error);
-      
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
       // Check for common wallet errors
       if (errorMessage.includes("User rejected")) {
         throw new Error("Transaction was rejected by user");
-      } else if (errorMessage.includes("insufficient funds") || errorMessage.includes("Insufficient")) {
+      } else if (
+        errorMessage.includes("insufficient funds") ||
+        errorMessage.includes("Insufficient")
+      ) {
         throw new Error("Insufficient funds for transaction");
       } else if (errorMessage.includes("Wallet not connected")) {
         throw new Error("Please connect your wallet first");

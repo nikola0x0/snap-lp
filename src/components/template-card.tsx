@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { StrategyTemplate } from "@/types/strategy";
-import { useAppStore } from "@/store/app-store";
+import { useEffect, useState } from "react";
+import { Info, Shield, TrendingUp, User, Zap } from "lucide-react";
+import type { StrategyTemplate } from "@/types/strategy";
 import { SNAPScoreBadge } from "@/components/snap-score-gauge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppStore } from "@/store/app-store";
 import { TemplateDetailModal } from "./template-detail-modal";
-import { Shield, TrendingUp, Zap, Info, User } from "lucide-react";
 
 // Risk level styling utilities
 const getRiskLevelColor = (riskLevel: string) => {
@@ -54,9 +54,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
       setLoadingScore(true);
       try {
-        const response = await fetch('/api/snap-score', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/snap-score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             templateId: template.id,
             poolAddress: selectedPool.address,
@@ -76,14 +76,20 @@ export function TemplateCard({ template }: TemplateCardProps) {
           setSnapScore(data.score.overall);
         }
       } catch (error) {
-        console.error('Failed to fetch SNAP Score:', error);
+        console.error("Failed to fetch SNAP Score:", error);
       } finally {
         setLoadingScore(false);
       }
     };
 
     fetchScore();
-  }, [selectedPool?.address, template.id, template.name, template.binConfiguration.rangeWidth, template.riskLevel]);
+  }, [
+    selectedPool?.address,
+    template.id,
+    template.name,
+    template.binConfiguration.rangeWidth,
+    template.riskLevel,
+  ]);
 
   const getRiskIcon = (riskLevel: string) => {
     switch (riskLevel) {
@@ -115,19 +121,17 @@ export function TemplateCard({ template }: TemplateCardProps) {
   const backRotation = isSelected ? 360 : 180;
 
   return (
-    <div
-      className="cursor-pointer relative min-h-[500px]"
-      style={{ perspective: '1000px' }}
+    <button
+      type="button"
+      className="cursor-pointer relative min-h-[500px] text-left w-full"
+      style={{ perspective: "1000px" }}
       onClick={handleCardClick}
-      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
-      role="button"
-      tabIndex={0}
     >
       {/* FRONT CARD */}
       <Card
         className="absolute inset-0 border-2 flex flex-col hover:shadow-lg transition-all duration-500 border-transparent hover:border-primary/30"
         style={{
-          backfaceVisibility: 'hidden',
+          backfaceVisibility: "hidden",
           transform: `rotateY(${frontRotation}deg)`,
           zIndex: isSelected ? 1 : 2,
         }}
@@ -135,12 +139,14 @@ export function TemplateCard({ template }: TemplateCardProps) {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle className="text-xl font-bold">{template.name}</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                {template.name}
+              </CardTitle>
               <div className="flex items-center gap-2 mt-2">
                 <Badge
                   variant="secondary"
                   className={`${getRiskLevelBgColor(
-                    template.riskLevel
+                    template.riskLevel,
                   )} ${getRiskLevelColor(template.riskLevel)} border-0`}
                 >
                   {getRiskIcon(template.riskLevel)}
@@ -154,7 +160,10 @@ export function TemplateCard({ template }: TemplateCardProps) {
                   {template.creator}
                 </span>
                 {template.creator === "SnapLP" && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1 bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0 ml-1 bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     Official
                   </Badge>
                 )}
@@ -164,7 +173,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-3 flex flex-col">
-          <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {template.description}
+          </p>
 
           {/* Highlight Metrics on Front */}
           <div className="grid grid-cols-2 gap-4 text-center py-2">
@@ -178,7 +189,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
               <div className="text-3xl font-bold">
                 ±{template.binConfiguration.rangeWidth / 2}%
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Price Range</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Price Range
+              </div>
             </div>
           </div>
 
@@ -191,7 +204,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 </div>
               ) : loadingScore ? (
                 <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
-                  <span className="text-[9px] text-green-400 font-mono tracking-wider">LOADING...</span>
+                  <span className="text-[9px] text-green-400 font-mono tracking-wider">
+                    LOADING...
+                  </span>
                   <div className="flex gap-[2px]">
                     {Array.from({ length: 20 }).map((_, i) => (
                       <div
@@ -216,7 +231,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
       <Card
         className="absolute inset-0 border-2 border-primary bg-primary/5 ring-2 ring-primary/20 flex flex-col overflow-y-auto transition-all duration-500"
         style={{
-          backfaceVisibility: 'hidden',
+          backfaceVisibility: "hidden",
           transform: `rotateY(${backRotation}deg)`,
           zIndex: isSelected ? 2 : 1,
         }}
@@ -229,7 +244,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 <Badge
                   variant="secondary"
                   className={`${getRiskLevelBgColor(
-                    template.riskLevel
+                    template.riskLevel,
                   )} ${getRiskLevelColor(template.riskLevel)} border-0`}
                 >
                   {getRiskIcon(template.riskLevel)}
@@ -251,7 +266,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-3 flex-1 flex flex-col text-sm">
-          <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2">
+            {template.description}
+          </p>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -299,7 +316,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 </div>
               ) : loadingScore ? (
                 <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
-                  <span className="text-[9px] text-green-400 font-mono tracking-wider">LOADING...</span>
+                  <span className="text-[9px] text-green-400 font-mono tracking-wider">
+                    LOADING...
+                  </span>
                   <div className="flex gap-[2px]">
                     {Array.from({ length: 20 }).map((_, i) => (
                       <div
@@ -337,6 +356,6 @@ export function TemplateCard({ template }: TemplateCardProps) {
         isOpen={showDetails}
         onClose={() => setShowDetails(false)}
       />
-    </div>
+    </button>
   );
 }

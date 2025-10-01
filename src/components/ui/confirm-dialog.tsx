@@ -41,7 +41,9 @@ export function ConfirmDialog({
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-2">{title}</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">{message}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {message}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -51,11 +53,7 @@ export function ConfirmDialog({
             </button>
           </div>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={onClose} className="flex-1">
               {cancelText}
             </Button>
             <Button

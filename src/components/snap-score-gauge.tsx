@@ -23,7 +23,11 @@ interface SNAPScoreGaugeProps {
   animated?: boolean;
 }
 
-export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAPScoreGaugeProps) {
+export function SNAPScoreGauge({
+  score,
+  compact = false,
+  animated = true,
+}: SNAPScoreGaugeProps) {
   const [displayScore, setDisplayScore] = useState(0);
 
   // Animate score counting up
@@ -106,11 +110,15 @@ export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAP
   if (compact) {
     return (
       <div className="flex items-center gap-3">
-        <div className={`bg-gradient-to-r ${getGradeColor(score.grade)} text-white font-bold px-4 py-1.5 rounded-lg shadow-lg`}>
+        <div
+          className={`bg-gradient-to-r ${getGradeColor(score.grade)} text-white font-bold px-4 py-1.5 rounded-lg shadow-lg`}
+        >
           {score.grade}
         </div>
         <div>
-          <div className="text-xs text-muted-foreground font-medium">SNAP Score</div>
+          <div className="text-xs text-muted-foreground font-medium">
+            SNAP Score
+          </div>
           <div className={`text-2xl font-bold ${getScoreColor(displayScore)}`}>
             {displayScore}
           </div>
@@ -128,7 +136,9 @@ export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAP
             SNAP SCORE
           </div>
           <div className="flex items-baseline gap-2">
-            <span className={`text-5xl font-bold font-mono ${getScoreColor(displayScore)} transition-colors`}>
+            <span
+              className={`text-5xl font-bold font-mono ${getScoreColor(displayScore)} transition-colors`}
+            >
               {String(displayScore).padStart(2, "0")}
             </span>
             <span className="text-lg text-slate-500 font-mono">/100</span>
@@ -137,13 +147,15 @@ export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAP
 
         {/* Grade Badge - Retro Style */}
         <div className="relative">
-          <div className={`
+          <div
+            className={`
             bg-gradient-to-br ${getGradeColor(score.grade)}
             w-16 h-16 rounded-lg
             flex items-center justify-center
             shadow-lg
             border-2 border-white/20
-          `}>
+          `}
+          >
             <span className="text-3xl font-bold text-white drop-shadow-md">
               {score.grade}
             </span>
@@ -180,11 +192,15 @@ export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAP
               <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                 <div
                   className={`h-full transition-all duration-500 ${
-                    percentage >= 92 ? "bg-purple-500" :
-                    percentage >= 80 ? "bg-blue-500" :
-                    percentage >= 60 ? "bg-green-500" :
-                    percentage >= 40 ? "bg-yellow-500" :
-                    "bg-red-500"
+                    percentage >= 92
+                      ? "bg-purple-500"
+                      : percentage >= 80
+                        ? "bg-blue-500"
+                        : percentage >= 60
+                          ? "bg-green-500"
+                          : percentage >= 40
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -200,17 +216,18 @@ export function SNAPScoreGauge({ score, compact = false, animated = true }: SNAP
           variant={score.confidence === "high" ? "default" : "secondary"}
           className="text-xs font-mono"
         >
-          {score.confidence === "high" ? "🎯" : "⚠️"} {score.confidence.toUpperCase()} CONFIDENCE
+          {score.confidence === "high" ? "🎯" : "⚠️"}{" "}
+          {score.confidence.toUpperCase()} CONFIDENCE
         </Badge>
-        <span className="text-xs text-slate-500 font-mono">
-          UPDATED 2M AGO
-        </span>
+        <span className="text-xs text-slate-500 font-mono">UPDATED 2M AGO</span>
       </div>
 
       {/* AI Reasoning (if provided) */}
       {score.reasoning && (
         <div className="mt-4 pt-4 border-t border-slate-700">
-          <div className="text-xs text-slate-400 font-mono mb-2">💡 AI INSIGHTS</div>
+          <div className="text-xs text-slate-400 font-mono mb-2">
+            💡 AI INSIGHTS
+          </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             {score.reasoning}
           </p>
@@ -240,8 +257,12 @@ export function SNAPScoreBadge({ score }: { score: number }) {
     <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
       {/* LCD Screen Label */}
       <div className="flex items-center justify-between">
-        <span className="text-[9px] text-green-400 font-mono tracking-wider">SNAP SCORE</span>
-        <span className="text-[9px] text-green-400 font-mono font-bold">{score}/100</span>
+        <span className="text-[9px] text-green-400 font-mono tracking-wider">
+          SNAP SCORE
+        </span>
+        <span className="text-[9px] text-green-400 font-mono font-bold">
+          {score}/100
+        </span>
       </div>
 
       {/* LCD Segments */}

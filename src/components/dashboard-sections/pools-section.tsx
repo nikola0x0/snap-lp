@@ -123,11 +123,11 @@ export function PoolsSection() {
         // Filter to only supported pools
         const supportedPoolAddresses = SUPPORTED_POOLS.map((p) => p.address);
         const supportedPoolsData = data.pools.filter((pool: any) =>
-          supportedPoolAddresses.includes(pool.address)
+          supportedPoolAddresses.includes(pool.address),
         );
 
         console.log(
-          `🎯 Filtered to ${supportedPoolsData.length} supported pools`
+          `🎯 Filtered to ${supportedPoolsData.length} supported pools`,
         );
 
         // Get detailed metrics for each supported pool
@@ -136,13 +136,14 @@ export function PoolsSection() {
         for (const pool of supportedPoolsData) {
           try {
             console.log(
-              `📈 Loading metrics for pool: ${pool.address.slice(0, 8)}...`
+              `📈 Loading metrics for pool: ${pool.address.slice(0, 8)}...`,
             );
             const metrics = await realDlmmService.getPoolMetrics(pool.address);
             if (metrics) {
               // Create pool name from token symbols (now properly available from API)
-              const poolName = `${pool.baseToken?.symbol || "TOKEN"}/${pool
-                .quoteToken?.symbol || "TOKEN"}`;
+              const poolName = `${pool.baseToken?.symbol || "TOKEN"}/${
+                pool.quoteToken?.symbol || "TOKEN"
+              }`;
 
               poolsWithMetrics.push({
                 address: pool.address,
@@ -155,7 +156,7 @@ export function PoolsSection() {
           } catch (err) {
             console.warn(
               `⚠️  Failed to load metrics for pool ${pool.address}:`,
-              err
+              err,
             );
           }
         }
@@ -163,7 +164,7 @@ export function PoolsSection() {
         if (poolsWithMetrics.length > 0) {
           setPools(poolsWithMetrics);
           console.log(
-            `✅ Successfully loaded ${poolsWithMetrics.length} pools with comprehensive metrics`
+            `✅ Successfully loaded ${poolsWithMetrics.length} pools with comprehensive metrics`,
           );
         } else {
           throw new Error("No pools loaded with metrics");
@@ -237,7 +238,7 @@ export function PoolsSection() {
 
         setPools(demoPoolsWithMetrics);
         console.log(
-          `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`
+          `📝 Loaded ${demoPoolsWithMetrics.length} demo pools as fallback`,
         );
       }
     } catch (err) {
@@ -305,7 +306,7 @@ export function PoolsSection() {
           return {
             date: date.toISOString().split("T")[0],
             liquidity: Math.floor(
-              pool.liquidity * trendFactor * (0.9 + Math.random() * 0.2)
+              pool.liquidity * trendFactor * (0.9 + Math.random() * 0.2),
             ),
           };
         });
@@ -342,7 +343,7 @@ export function PoolsSection() {
 
   const filteredPools = pools
     .filter((pool) =>
-      (pool.name || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (pool.name || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .sort((a, b) => {
       const aVal = a[sortBy];
@@ -674,7 +675,7 @@ export function PoolsSection() {
                     <CardContent className="p-4 text-center">
                       <div className="text-lg font-bold">
                         {formatCurrency(
-                          (selectedPool.volume24h * selectedPool.feeRate) / 100
+                          (selectedPool.volume24h * selectedPool.feeRate) / 100,
                         )}
                       </div>
                       <div className="text-sm text-gray-600">24H Fee</div>
@@ -771,7 +772,7 @@ export function PoolsSection() {
                       // Use real mint addresses from original pool data
                       console.log(
                         "🔍 Checking originalPool data:",
-                        selectedPool.originalPool
+                        selectedPool.originalPool,
                       );
                       const baseMint =
                         selectedPool.originalPool?.baseToken?.mint;
@@ -785,14 +786,14 @@ export function PoolsSection() {
 
                       if (!baseMint || !quoteMint) {
                         console.error(
-                          "❌ Cannot deploy: Missing real mint addresses from pool metadata"
+                          "❌ Cannot deploy: Missing real mint addresses from pool metadata",
                         );
                         console.error(
                           "Full pool data:",
-                          JSON.stringify(selectedPool, null, 2)
+                          JSON.stringify(selectedPool, null, 2),
                         );
                         alert(
-                          "Error: Cannot deploy this pool - missing token mint addresses. Please try a different pool."
+                          "Error: Cannot deploy this pool - missing token mint addresses. Please try a different pool.",
                         );
                         return;
                       }

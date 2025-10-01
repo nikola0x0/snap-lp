@@ -29,10 +29,11 @@ export const SUPPORTED_POOLS = [
 /**
  * Get list of supported pool addresses
  */
-export const getSupportedPoolAddresses = () => SUPPORTED_POOLS.map(p => p.address);
+export const getSupportedPoolAddresses = () =>
+  SUPPORTED_POOLS.map((p) => p.address);
 
 /**
  * Check if a pool is supported
  */
 export const isSupportedPool = (address: string) =>
-  SUPPORTED_POOLS.some(p => p.address === address);
+  SUPPORTED_POOLS.some((p) => p.address === address);

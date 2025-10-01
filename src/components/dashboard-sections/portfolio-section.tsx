@@ -9,7 +9,11 @@ import { Badge } from "../ui/badge";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { ClientOnly } from "../client-only";
 import { useAppStore } from "@/store/app-store";
-import { LiquidityBookServices, MODE, RemoveLiquidityType } from "@saros-finance/dlmm-sdk";
+import {
+  LiquidityBookServices,
+  MODE,
+  RemoveLiquidityType,
+} from "@saros-finance/dlmm-sdk";
 import { SUPPORTED_POOLS } from "@/constants/supported-pools";
 import {
   TrendingUp,
@@ -51,7 +55,9 @@ export function PortfolioSection() {
   const [positions, setPositions] = useState<DLMMPosition[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [processingPosition, setProcessingPosition] = useState<string | null>(null);
+  const [processingPosition, setProcessingPosition] = useState<string | null>(
+    null,
+  );
 
   // Fetch real DLMM positions
   const fetchPositions = async () => {
@@ -64,7 +70,10 @@ export function PortfolioSection() {
     setError(null);
 
     try {
-      console.log("🔍 Fetching DLMM positions for wallet:", publicKey.toString());
+      console.log(
+        "🔍 Fetching DLMM positions for wallet:",
+        publicKey.toString(),
+      );
 
       const allPositions: DLMMPosition[] = [];
 
@@ -79,12 +88,14 @@ export function PortfolioSection() {
       }
 
       // Filter to only check our supported pools
-      const supportedPoolAddresses = SUPPORTED_POOLS.map(p => p.address);
+      const supportedPoolAddresses = SUPPORTED_POOLS.map((p) => p.address);
       const poolsToCheck = data.pools.filter((pool: any) =>
-        supportedPoolAddresses.includes(pool.address)
+        supportedPoolAddresses.includes(pool.address),
       );
 
-      console.log(`📋 Checking ${poolsToCheck.length} supported pools for positions...`);
+      console.log(
+        `📋 Checking ${poolsToCheck.length} supported pools for positions...`,
+      );
       console.log("Supported pool addresses:", supportedPoolAddresses);
 
       // Check each supported pool
@@ -104,7 +115,9 @@ export function PortfolioSection() {
           });
 
           if (userPositions.length > 0) {
-            console.log(`✅ Found ${userPositions.length} positions in pool ${pool.address.slice(0, 8)}...`);
+            console.log(
+              `✅ Found ${userPositions.length} positions in pool ${pool.address.slice(0, 8)}...`,
+            );
           }
 
           // Process each position
@@ -124,8 +137,12 @@ export function PortfolioSection() {
               (pos.upperBinId || 0) >= pairInfo.activeId;
 
             // Get token symbols
-            const baseSymbol = pool.baseToken?.symbol || getTokenSymbol(pool.baseToken?.mint || "");
-            const quoteSymbol = pool.quoteToken?.symbol || getTokenSymbol(pool.quoteToken?.mint || "");
+            const baseSymbol =
+              pool.baseToken?.symbol ||
+              getTokenSymbol(pool.baseToken?.mint || "");
+            const quoteSymbol =
+              pool.quoteToken?.symbol ||
+              getTokenSymbol(pool.quoteToken?.mint || "");
 
             allPositions.push({
               positionMint: pos.positionMint.toString(),
@@ -153,7 +170,9 @@ export function PortfolioSection() {
       console.log(`✅ Total positions found: ${allPositions.length}`);
     } catch (err) {
       console.error("❌ Error fetching positions:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch positions");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch positions",
+      );
     } finally {
       setLoading(false);
     }
@@ -166,7 +185,7 @@ export function PortfolioSection() {
     }
 
     const confirmed = confirm(
-      `Remove all liquidity from position ${position.positionMint.slice(0, 8)}...?\n\nThis will withdraw all tokens and close the position.`
+      `Remove all liquidity from position ${position.positionMint.slice(0, 8)}...?\n\nThis will withdraw all tokens and close the position.`,
     );
 
     if (!confirmed) return;
@@ -174,7 +193,10 @@ export function PortfolioSection() {
     setProcessingPosition(position.positionMint);
 
     try {
-      console.log("🔄 Removing liquidity from position:", position.positionMint);
+      console.log(
+        "🔄 Removing liquidity from position:",
+        position.positionMint,
+      );
 
       const pairAddress = new PublicKey(position.poolAddress);
       const pairInfo = await dlmmService.getPairAccount(pairAddress);
@@ -190,7 +212,7 @@ export function PortfolioSection() {
       });
 
       const targetPosition = userPositions.find(
-        (p) => p.positionMint.toString() === position.positionMint
+        (p) => p.positionMint.toString() === position.positionMint,
       );
 
       if (!targetPosition) {
@@ -226,26 +248,35 @@ export function PortfolioSection() {
       // Execute transactions
       for (let i = 0; i < allTxs.length; i++) {
         const tx = allTxs[i];
-        const { blockhash } = await dlmmService.connection.getLatestBlockhash("confirmed");
+        const { blockhash } =
+          await dlmmService.connection.getLatestBlockhash("confirmed");
         tx.recentBlockhash = blockhash;
         tx.feePayer = publicKey;
 
-        const signature = await sendTransaction(tx, dlmmService.connection as any, {
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-        });
+        const signature = await sendTransaction(
+          tx,
+          dlmmService.connection as any,
+          {
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+          },
+        );
 
         console.log(`✅ Transaction ${i + 1}/${allTxs.length}:`, signature);
         await dlmmService.connection.confirmTransaction(signature, "confirmed");
       }
 
-      alert(`✅ Successfully removed liquidity!\n\nTokens have been returned to your wallet.`);
+      alert(
+        `✅ Successfully removed liquidity!\n\nTokens have been returned to your wallet.`,
+      );
 
       // Refresh positions
       await fetchPositions();
     } catch (err) {
       console.error("❌ Error removing liquidity:", err);
-      alert(`❌ Failed to remove liquidity:\n${err instanceof Error ? err.message : "Unknown error"}`);
+      alert(
+        `❌ Failed to remove liquidity:\n${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     } finally {
       setProcessingPosition(null);
     }
@@ -268,8 +299,8 @@ export function PortfolioSection() {
 
     const confirmed = confirm(
       `Claim fees from position ${position.positionMint.slice(0, 8)}...?\n\n` +
-      `${getTokenSymbol(position.tokenX)}: ${totalFeesX.toFixed(6)}\n` +
-      `${getTokenSymbol(position.tokenY)}: ${totalFeesY.toFixed(6)}`
+        `${getTokenSymbol(position.tokenX)}: ${totalFeesX.toFixed(6)}\n` +
+        `${getTokenSymbol(position.tokenY)}: ${totalFeesY.toFixed(6)}`,
     );
 
     if (!confirmed) return;
@@ -288,7 +319,7 @@ export function PortfolioSection() {
       });
 
       const targetPosition = userPositions.find(
-        (p) => p.positionMint.toString() === position.positionMint
+        (p) => p.positionMint.toString() === position.positionMint,
       );
 
       if (!targetPosition) {
@@ -318,26 +349,38 @@ export function PortfolioSection() {
       // Execute transactions
       for (let i = 0; i < txs.length; i++) {
         const tx = txs[i] as Transaction;
-        const { blockhash } = await dlmmService.connection.getLatestBlockhash("confirmed");
+        const { blockhash } =
+          await dlmmService.connection.getLatestBlockhash("confirmed");
         tx.recentBlockhash = blockhash;
         tx.feePayer = publicKey;
 
-        const signature = await sendTransaction(tx, dlmmService.connection as any, {
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-        });
+        const signature = await sendTransaction(
+          tx,
+          dlmmService.connection as any,
+          {
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+          },
+        );
 
-        console.log(`✅ Fee claim transaction ${i + 1}/${txs.length}:`, signature);
+        console.log(
+          `✅ Fee claim transaction ${i + 1}/${txs.length}:`,
+          signature,
+        );
         await dlmmService.connection.confirmTransaction(signature, "confirmed");
       }
 
-      alert(`✅ Successfully claimed fees!\n\nFees have been sent to your wallet.`);
+      alert(
+        `✅ Successfully claimed fees!\n\nFees have been sent to your wallet.`,
+      );
 
       // Refresh positions
       await fetchPositions();
     } catch (err) {
       console.error("❌ Error claiming fees:", err);
-      alert(`❌ Failed to claim fees:\n${err instanceof Error ? err.message : "Unknown error"}`);
+      alert(
+        `❌ Failed to claim fees:\n${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     } finally {
       setProcessingPosition(null);
     }
@@ -392,8 +435,10 @@ export function PortfolioSection() {
 
   // Calculate totals from real positions
   const totalPositions = positions.length;
-  const activePositions = positions.filter((p) => p.status === "in-range").length;
-  const poolsCount = new Set(positions.map(p => p.poolAddress)).size;
+  const activePositions = positions.filter(
+    (p) => p.status === "in-range",
+  ).length;
+  const poolsCount = new Set(positions.map((p) => p.poolAddress)).size;
 
   if (!connected) {
     return (
@@ -487,7 +532,9 @@ export function PortfolioSection() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-4 h-4 text-orange-500" />
-              <span className="text-sm text-muted-foreground">Out of Range</span>
+              <span className="text-sm text-muted-foreground">
+                Out of Range
+              </span>
             </div>
             <div className="text-2xl font-bold text-orange-600">
               {totalPositions - activePositions}
@@ -546,7 +593,9 @@ export function PortfolioSection() {
 
       {!loading && positions.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Active Positions ({positions.length})</h2>
+          <h2 className="text-lg font-semibold">
+            Active Positions ({positions.length})
+          </h2>
 
           {positions.map((position) => (
             <Card key={position.positionMint}>
@@ -563,7 +612,9 @@ export function PortfolioSection() {
                     </div>
                     <Badge
                       variant={
-                        position.status === "in-range" ? "default" : "destructive"
+                        position.status === "in-range"
+                          ? "default"
+                          : "destructive"
                       }
                     >
                       {position.status === "in-range"
@@ -573,7 +624,8 @@ export function PortfolioSection() {
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">
-                      {getTokenSymbol(position.tokenX)}/{getTokenSymbol(position.tokenY)}
+                      {getTokenSymbol(position.tokenX)}/
+                      {getTokenSymbol(position.tokenY)}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Bins: {position.lowerBinId} - {position.upperBinId}
@@ -591,7 +643,14 @@ export function PortfolioSection() {
                     <div className="font-medium">
                       {position.totalXAmount === 0
                         ? "0.0000"
-                        : (position.totalXAmount / Math.pow(10, selectedPool?.metadata?.extra?.tokenBaseDecimal || 6)).toFixed(4)}
+                        : (
+                            position.totalXAmount /
+                            Math.pow(
+                              10,
+                              selectedPool?.metadata?.extra?.tokenBaseDecimal ||
+                                6,
+                            )
+                          ).toFixed(4)}
                     </div>
                   </div>
                   <div>
@@ -601,7 +660,14 @@ export function PortfolioSection() {
                     <div className="font-medium">
                       {position.totalYAmount === 0
                         ? "0.0000"
-                        : (position.totalYAmount / Math.pow(10, selectedPool?.metadata?.extra?.tokenQuoteDecimal || 9)).toFixed(4)}
+                        : (
+                            position.totalYAmount /
+                            Math.pow(
+                              10,
+                              selectedPool?.metadata?.extra
+                                ?.tokenQuoteDecimal || 9,
+                            )
+                          ).toFixed(4)}
                     </div>
                   </div>
                   <div>
@@ -611,7 +677,14 @@ export function PortfolioSection() {
                     <div className="font-medium text-green-600">
                       {position.feesX === 0
                         ? "0.000000"
-                        : (position.feesX / Math.pow(10, selectedPool?.metadata?.extra?.tokenBaseDecimal || 6)).toFixed(6)}
+                        : (
+                            position.feesX /
+                            Math.pow(
+                              10,
+                              selectedPool?.metadata?.extra?.tokenBaseDecimal ||
+                                6,
+                            )
+                          ).toFixed(6)}
                     </div>
                   </div>
                   <div>
@@ -621,7 +694,14 @@ export function PortfolioSection() {
                     <div className="font-medium text-green-600">
                       {position.feesY === 0
                         ? "0.000000"
-                        : (position.feesY / Math.pow(10, selectedPool?.metadata?.extra?.tokenQuoteDecimal || 9)).toFixed(6)}
+                        : (
+                            position.feesY /
+                            Math.pow(
+                              10,
+                              selectedPool?.metadata?.extra
+                                ?.tokenQuoteDecimal || 9,
+                            )
+                          ).toFixed(6)}
                     </div>
                   </div>
                 </div>
@@ -631,7 +711,10 @@ export function PortfolioSection() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleClaimFees(position)}
-                    disabled={processingPosition === position.positionMint || (position.feesX === 0 && position.feesY === 0)}
+                    disabled={
+                      processingPosition === position.positionMint ||
+                      (position.feesX === 0 && position.feesY === 0)
+                    }
                   >
                     {processingPosition === position.positionMint ? (
                       <>

@@ -1,21 +1,25 @@
-import { Dialect } from "@dialectlabs/sdk"
-import { sarosDLMM } from "./service.js"
-import { SolanaSdkFactory } from "@dialectlabs/blockchain-sdk-solana"
-import { Monitor, Monitors, Pipelines, SourceData } from "@dialectlabs/monitor"
-import { Subject } from "rxjs"
-import { Keypair } from "@solana/web3.js"
-import bs58 from "bs58"
-import { CustomWalletAdapter } from "./wallet.js"
+import { Dialect } from "@dialectlabs/sdk";
+import { sarosDLMM } from "./service.js";
+import { SolanaSdkFactory } from "@dialectlabs/blockchain-sdk-solana";
+import { Monitor, Monitors, Pipelines, SourceData } from "@dialectlabs/monitor";
+import { Subject } from "rxjs";
+import { Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
+import { CustomWalletAdapter } from "./wallet.js";
 
 const TARGET_BASE_MINT = "CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM";
 
 const dialectSolanaSDK = Dialect.sdk(
   { environment: "development" },
-  SolanaSdkFactory.create({ 
-    wallet: new CustomWalletAdapter(Keypair.fromSecretKey(
-      bs58.decode("3SBakQxEu245aJVjHtRp9BmwD4PJJYbURYPyqfhxWGxV2FYpMhtUpfHyWUnJkQvb57pyyvirFwADXByQSAPpWkwd")
-    ))
-  })
+  SolanaSdkFactory.create({
+    wallet: new CustomWalletAdapter(
+      Keypair.fromSecretKey(
+        bs58.decode(
+          "3SBakQxEu245aJVjHtRp9BmwD4PJJYbURYPyqfhxWGxV2FYpMhtUpfHyWUnJkQvb57pyyvirFwADXByQSAPpWkwd",
+        ),
+      ),
+    ),
+  }),
 );
 
 type MessageType = {
@@ -43,15 +47,15 @@ const alertPoolCreation = async () => {
 
 alertPoolCreation();
 
-const monitor: Monitor<MessageType> = Monitors.builder({ sdk: dialectSolanaSDK })
+const monitor: Monitor<MessageType> = Monitors.builder({
+  sdk: dialectSolanaSDK,
+})
   .defineDataSource<MessageType>()
   .push(subject)
   .transform<string, string>({
     keys: ["POOL_ADDRESS"],
     pipelines: [
-      Pipelines.createNew<string, MessageType, string>((upstream) =>
-        upstream
-      ),
+      Pipelines.createNew<string, MessageType, string>((upstream) => upstream),
     ],
   })
   .notify()
@@ -62,7 +66,7 @@ const monitor: Monitor<MessageType> = Monitors.builder({ sdk: dialectSolanaSDK }
         message: `🚨 New PYUSD pool with address ${value} was created`,
       };
     },
-    { dispatch: "broadcast" }
+    { dispatch: "broadcast" },
   )
   .and()
   .build();

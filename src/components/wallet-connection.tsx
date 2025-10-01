@@ -9,9 +9,7 @@ import { ClientOnly } from "./client-only";
 export const WalletConnection: FC = () => {
   return (
     <ClientOnly
-      fallback={
-        <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
-      }
+      fallback={<div className="h-9 w-24 bg-muted animate-pulse rounded-md" />}
     >
       <WalletMultiButton />
     </ClientOnly>

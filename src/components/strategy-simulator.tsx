@@ -124,13 +124,15 @@ export function StrategySimulator({
     const utilizationRate = activeBins / bins.length;
 
     // Price movement calculation
-    const priceChange = ((selectedPrice[0] - currentPrice) / currentPrice) * 100;
+    const priceChange =
+      ((selectedPrice[0] - currentPrice) / currentPrice) * 100;
     const priceMovement = Math.abs(priceChange);
 
     // IL calculation (simplified DLMM formula)
-    const impermanentLoss = priceMovement > 0
-      ? 2 * Math.sqrt(1 + priceChange/100) - 2 - (priceChange/100)
-      : 0;
+    const impermanentLoss =
+      priceMovement > 0
+        ? 2 * Math.sqrt(1 + priceChange / 100) - 2 - priceChange / 100
+        : 0;
 
     // Fee estimation based on liquidity and volume
     const dailyVolume = liquidityAmount[0] * 0.5; // Assume 50% daily turnover
@@ -140,7 +142,8 @@ export function StrategySimulator({
     // Calculate price range coverage
     const sortedBins = bins.sort((a, b) => a.price - b.price);
     const minPrice = sortedBins[0]?.price || currentPrice * 0.8;
-    const maxPrice = sortedBins[sortedBins.length - 1]?.price || currentPrice * 1.2;
+    const maxPrice =
+      sortedBins[sortedBins.length - 1]?.price || currentPrice * 1.2;
 
     return {
       // Returns
@@ -161,7 +164,10 @@ export function StrategySimulator({
       binUtilization: utilizationRate * 100,
 
       // Scenarios
-      breakEven: dailyFees > 0 ? (Math.abs(impermanentLoss) * liquidityAmount[0]) / (dailyFees * 100) : 0,
+      breakEven:
+        dailyFees > 0
+          ? (Math.abs(impermanentLoss) * liquidityAmount[0]) / (dailyFees * 100)
+          : 0,
     };
   };
 
@@ -288,7 +294,9 @@ export function StrategySimulator({
           </div>
 
           {/* Price Range Coverage */}
-          <div className={`p-4 rounded-lg border-2 ${metrics.inRange ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+          <div
+            className={`p-4 rounded-lg border-2 ${metrics.inRange ? "bg-green-50 border-green-200" : "bg-orange-50 border-orange-200"}`}
+          >
             <h4 className="font-semibold mb-2 flex items-center gap-2">
               📍 Your Position Coverage
               {metrics.inRange ? (
@@ -339,7 +347,8 @@ export function StrategySimulator({
               </div>
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              Estimated APR: {metrics.estimatedAPR.toFixed(1)}% (based on {metrics.binUtilization.toFixed(0)}% bin utilization)
+              Estimated APR: {metrics.estimatedAPR.toFixed(1)}% (based on{" "}
+              {metrics.binUtilization.toFixed(0)}% bin utilization)
             </div>
           </div>
 
@@ -348,20 +357,28 @@ export function StrategySimulator({
             <h4 className="font-semibold mb-3">⚠️ Risk Assessment</h4>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm">If price moves to ${selectedPrice[0].toFixed(2)}:</span>
-                <span className={`font-bold ${Math.abs(metrics.priceChange) > 10 ? 'text-orange-600' : 'text-green-600'}`}>
-                  {metrics.priceChange > 0 ? '+' : ''}{metrics.priceChange.toFixed(1)}%
+                <span className="text-sm">
+                  If price moves to ${selectedPrice[0].toFixed(2)}:
+                </span>
+                <span
+                  className={`font-bold ${Math.abs(metrics.priceChange) > 10 ? "text-orange-600" : "text-green-600"}`}
+                >
+                  {metrics.priceChange > 0 ? "+" : ""}
+                  {metrics.priceChange.toFixed(1)}%
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Impermanent Loss:</span>
-                <span className={`font-bold ${metrics.impermanentLoss > 5 ? 'text-red-600' : 'text-orange-600'}`}>
+                <span
+                  className={`font-bold ${metrics.impermanentLoss > 5 ? "text-red-600" : "text-orange-600"}`}
+                >
                   -{metrics.impermanentLoss.toFixed(2)}%
                 </span>
               </div>
               {metrics.breakEven > 0 && metrics.breakEven < 365 && (
                 <div className="text-xs text-muted-foreground mt-2 p-2 bg-white rounded">
-                  💡 Fees will offset IL in approximately {metrics.breakEven.toFixed(0)} days
+                  💡 Fees will offset IL in approximately{" "}
+                  {metrics.breakEven.toFixed(0)} days
                 </div>
               )}
             </div>
@@ -374,20 +391,33 @@ export function StrategySimulator({
               <div className="flex justify-between">
                 <span>✅ Best case (stays in range 30 days):</span>
                 <span className="font-bold text-green-600">
-                  +${metrics.monthlyReturn.toFixed(2)} ({((metrics.monthlyReturn / liquidityAmount[0]) * 100).toFixed(1)}%)
+                  +${metrics.monthlyReturn.toFixed(2)} (
+                  {((metrics.monthlyReturn / liquidityAmount[0]) * 100).toFixed(
+                    1,
+                  )}
+                  %)
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>⚠️ Worst case (price to ${selectedPrice[0].toFixed(2)}):</span>
+                <span>
+                  ⚠️ Worst case (price to ${selectedPrice[0].toFixed(2)}):
+                </span>
                 <span className="font-bold text-orange-600">
-                  -${((metrics.impermanentLoss / 100) * liquidityAmount[0]).toFixed(2)} ({metrics.impermanentLoss.toFixed(1)}% IL)
+                  -$
+                  {(
+                    (metrics.impermanentLoss / 100) *
+                    liquidityAmount[0]
+                  ).toFixed(2)}{" "}
+                  ({metrics.impermanentLoss.toFixed(1)}% IL)
                 </span>
               </div>
               {!metrics.inRange && (
                 <div className="flex items-start gap-2 p-2 bg-orange-100 rounded mt-2">
                   <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5" />
                   <span className="text-xs">
-                    <strong>Position out of range!</strong> You won't earn fees until price returns between ${metrics.minPrice.toFixed(2)} - ${metrics.maxPrice.toFixed(2)}
+                    <strong>Position out of range!</strong> You won't earn fees
+                    until price returns between ${metrics.minPrice.toFixed(2)} -
+                    ${metrics.maxPrice.toFixed(2)}
                   </span>
                 </div>
               )}

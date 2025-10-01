@@ -73,7 +73,6 @@ export default function Home() {
     isTemplateSelected,
   } = useAppStore();
 
-
   const renderSection = () => {
     switch (currentStep) {
       case "pools":

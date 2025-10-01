@@ -9,11 +9,13 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const size = parseInt(searchParams.get("size") || "20");
 
-    console.log(`📡 Fetching DLMM pools directly from SDK (page ${page}, size ${size})`);
+    console.log(
+      `📡 Fetching DLMM pools directly from SDK (page ${page}, size ${size})`,
+    );
 
     // Use DLMM service directly instead of failing GraphQL API
     const poolsResult = await realDlmmService.getPools();
-    
+
     if (!poolsResult || !poolsResult.pools) {
       console.error("❌ No pools returned from DLMM service");
       return NextResponse.json(
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
             hasPreviousPage: false,
           },
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
     const startIndex = (page - 1) * size;
     const endIndex = startIndex + size;
     const paginatedPools = poolsResult.pools.slice(startIndex, endIndex);
-    
+
     const totalPools = poolsResult.pools.length;
     const totalPages = Math.ceil(totalPools / size);
 
@@ -47,12 +49,16 @@ export async function GET(request: NextRequest) {
       const transformed = {
         address: pool.address,
         baseToken: {
-          symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.baseMint),
+          symbol: realDlmmService.getTokenSymbolFromAddress(
+            pool.metadata.baseMint,
+          ),
           mint: pool.metadata.baseMint,
           decimals: pool.metadata.extra.tokenBaseDecimal,
         },
         quoteToken: {
-          symbol: realDlmmService.getTokenSymbolFromAddress(pool.metadata.quoteMint),
+          symbol: realDlmmService.getTokenSymbolFromAddress(
+            pool.metadata.quoteMint,
+          ),
           mint: pool.metadata.quoteMint,
           decimals: pool.metadata.extra.tokenQuoteDecimal,
         },
@@ -66,13 +72,18 @@ export async function GET(request: NextRequest) {
 
       // Log first pool for debugging
       if (pool === paginatedPools[0]) {
-        console.log(`📋 Sample transformed pool:`, JSON.stringify(transformed, null, 2));
+        console.log(
+          `📋 Sample transformed pool:`,
+          JSON.stringify(transformed, null, 2),
+        );
       }
 
       return transformed;
     });
 
-    console.log(`✅ Successfully returned ${transformedPools.length} DLMM pools`);
+    console.log(
+      `✅ Successfully returned ${transformedPools.length} DLMM pools`,
+    );
 
     return NextResponse.json({
       success: true,
@@ -88,11 +99,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("❌ DLMM Pools API error:", error);
-    
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch DLMM pools",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch DLMM pools",
         pools: [],
         pagination: {
           currentPage: 1,
@@ -103,7 +115,7 @@ export async function GET(request: NextRequest) {
           hasPreviousPage: false,
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

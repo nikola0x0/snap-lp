@@ -1,4 +1,9 @@
-import { Keypair, Transaction, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import {
+  Keypair,
+  Transaction,
+  PublicKey,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { readFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
@@ -17,7 +22,9 @@ export class CustomWalletAdapter {
     return this.keypair.publicKey;
   }
 
-  async signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T> {
+  async signTransaction<T extends Transaction | VersionedTransaction>(
+    transaction: T,
+  ): Promise<T> {
     if (transaction instanceof Transaction) {
       transaction.sign(this.keypair);
     } else if (transaction instanceof VersionedTransaction) {
@@ -26,8 +33,10 @@ export class CustomWalletAdapter {
     return transaction;
   }
 
-  async signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]> {
-    return transactions.map(tx => {
+  async signAllTransactions<T extends Transaction | VersionedTransaction>(
+    transactions: T[],
+  ): Promise<T[]> {
+    return transactions.map((tx) => {
       if (tx instanceof Transaction) {
         tx.sign(this.keypair);
       } else if (tx instanceof VersionedTransaction) {
@@ -68,7 +77,9 @@ export function loadWalletFromCLI(): Keypair {
     return Keypair.fromSecretKey(new Uint8Array(secretKey));
   } catch (error) {
     console.error("Failed to load wallet from Solana CLI:", error);
-    throw new Error("Could not load wallet. Make sure you have a keypair set up with 'solana-keygen new'");
+    throw new Error(
+      "Could not load wallet. Make sure you have a keypair set up with 'solana-keygen new'",
+    );
   }
 }
 

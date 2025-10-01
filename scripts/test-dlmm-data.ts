@@ -17,7 +17,7 @@ async function testDLMMData() {
   try {
     const sarosDLMM = new LiquidityBookServices({
       mode: MODE.DEVNET,
-      options: { rpcUrl: RPC_ENDPOINT }
+      options: { rpcUrl: RPC_ENDPOINT },
     });
     const connection = sarosDLMM.connection;
     const poolPubkey = new PublicKey(TEST_POOL);
@@ -55,17 +55,23 @@ async function testDLMMData() {
       });
 
       // Check bins structure
-      if (binArray && typeof binArray === 'object') {
+      if (binArray && typeof binArray === "object") {
         console.log("Bin Array keys:", Object.keys(binArray));
       }
     } catch (e: any) {
-      console.log("Could not fetch bin array (may need transaction):", e?.message || e);
+      console.log(
+        "Could not fetch bin array (may need transaction):",
+        e?.message || e,
+      );
     }
 
     // Test 3: Check available methods on service
     console.log("\n🛠️ Test 3: Available SDK Methods");
-    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(sarosDLMM))
-      .filter(m => m !== 'constructor' && typeof (sarosDLMM as any)[m] === 'function');
+    const methods = Object.getOwnPropertyNames(
+      Object.getPrototypeOf(sarosDLMM),
+    ).filter(
+      (m) => m !== "constructor" && typeof (sarosDLMM as any)[m] === "function",
+    );
     console.log("Available methods:", methods.slice(0, 20));
 
     // Test 4: Try to get price from reserves
@@ -80,7 +86,6 @@ async function testDLMMData() {
     }
 
     console.log("\n✅ Data test complete!");
-
   } catch (error: any) {
     console.error("❌ Error:", error?.message || error);
     console.error(error);
