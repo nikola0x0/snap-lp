@@ -111,7 +111,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
   const isSelected = selectedTemplate?.id === template.id;
 
   const handleCardClick = () => {
-    if (!isSelected) {
+    if (isSelected) {
+      selectTemplate(null); // Unselect if already selected
+    } else {
       selectTemplate(template);
     }
   };
@@ -121,22 +123,30 @@ export function TemplateCard({ template }: TemplateCardProps) {
   const backRotation = isSelected ? 360 : 180;
 
   return (
-    <button
-      type="button"
-      className="cursor-pointer relative min-h-[500px] text-left w-full"
+    <div
+      className="cursor-pointer relative min-h-[420px]"
       style={{ perspective: "1000px" }}
       onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select ${template.name} template`}
     >
       {/* FRONT CARD */}
       <Card
-        className="absolute inset-0 border-2 flex flex-col hover:shadow-lg transition-all duration-500 border-transparent hover:border-primary/30"
+        className="absolute top-0 left-0 right-0 min-h-[420px] border-2 hover:shadow-lg transition-all duration-500 border-transparent hover:border-primary/30 gap-3"
         style={{
           backfaceVisibility: "hidden",
           transform: `rotateY(${frontRotation}deg)`,
           zIndex: isSelected ? 1 : 2,
         }}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="text-xl font-bold">
@@ -172,7 +182,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3 flex flex-col">
+        <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground line-clamp-2">
             {template.description}
           </p>
@@ -229,14 +239,14 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
       {/* BACK CARD */}
       <Card
-        className="absolute inset-0 border-2 border-primary bg-primary/5 ring-2 ring-primary/20 flex flex-col overflow-y-auto transition-all duration-500"
+        className="absolute top-0 left-0 right-0 min-h-[420px] border-2 border-primary bg-primary/5 ring-2 ring-primary/20 transition-all duration-500 gap-3"
         style={{
           backfaceVisibility: "hidden",
           transform: `rotateY(${backRotation}deg)`,
           zIndex: isSelected ? 2 : 1,
         }}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="text-lg">{template.name}</CardTitle>
@@ -265,7 +275,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3 flex-1 flex flex-col text-sm">
+        <CardContent className="space-y-2 text-sm">
           <p className="text-xs text-muted-foreground line-clamp-2">
             {template.description}
           </p>
@@ -307,32 +317,6 @@ export function TemplateCard({ template }: TemplateCardProps) {
             ))}
           </div>
 
-          {/* SNAP Score Badge - Bottom Section (Full Width) */}
-          {selectedPool && (
-            <div className="pt-2 pb-2 mt-auto">
-              {snapScore !== null && !loadingScore ? (
-                <div className="w-full">
-                  <SNAPScoreBadge score={snapScore} />
-                </div>
-              ) : loadingScore ? (
-                <div className="w-full flex flex-col gap-1 px-2 py-1.5 bg-black border-2 border-slate-700 rounded">
-                  <span className="text-[9px] text-green-400 font-mono tracking-wider">
-                    LOADING...
-                  </span>
-                  <div className="flex gap-[2px]">
-                    {Array.from({ length: 20 }).map((_, i) => (
-                      <div
-                        key={`loading-back-${template.id}-${i}`}
-                        className="w-[6px] h-[8px] bg-slate-800 animate-pulse"
-                        style={{ animationDelay: `${i * 50}ms` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          )}
-
           {/* Actions */}
           <div className="space-y-2">
             <Button
@@ -356,6 +340,6 @@ export function TemplateCard({ template }: TemplateCardProps) {
         isOpen={showDetails}
         onClose={() => setShowDetails(false)}
       />
-    </button>
+    </div>
   );
 }

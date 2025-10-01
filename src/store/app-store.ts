@@ -36,7 +36,7 @@ interface AppState {
   // Actions
   selectPool: (pool: PoolData) => void;
   setPools: (pools: PoolData[]) => void;
-  selectTemplate: (template: StrategyTemplate) => void;
+  selectTemplate: (template: StrategyTemplate | null) => void;
   setStep: (
     step:
       | "pools"
@@ -70,7 +70,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  selectTemplate: (template: StrategyTemplate) => {
+  selectTemplate: (template: StrategyTemplate | null) => {
     set({
       selectedTemplate: template,
       // Removed auto-advance to simulator
