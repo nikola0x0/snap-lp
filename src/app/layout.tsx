@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   openGraph: {
     title: "SnapLP - DLMM Strategy Templates",
-    description: "Simplified DLMM liquidity provision with pre-configured strategy templates",
+    description: "Simplified DLMM liquidity provision - a strategy templates marketplace",
     url: "https://snaplp.vercel.app",
     siteName: "SnapLP",
     images: [
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "SnapLP - DLMM Strategy Templates",
-    description: "Simplified DLMM liquidity provision with pre-configured strategy templates",
+    description: "Simplified DLMM liquidity provision - a strategy templates marketplace",
     images: ["/og-image.png"],
   },
 };
