@@ -15,9 +15,9 @@ const abel = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SnapLP - DLMM Strategy Templates",
+  title: "SnapLP",
   description:
-    "Simplified DLMM liquidity provision with pre-configured strategy templates",
+    "Simplified DLMM liquidity provision - a strategy templates marketplace",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
