@@ -40,4 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Local development files
 .local-docs
+ref/
+.claude/
+.serena/
+docs/
+WARP.md
+CLAUDE.md
