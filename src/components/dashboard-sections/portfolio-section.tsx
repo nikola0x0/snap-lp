@@ -121,12 +121,70 @@ export function PortfolioSection() {
 
           // Process each position
           for (const pos of userPositions) {
-            console.log("Position data:", {
+            console.log("Full position object:", pos);
+
+            // Use getBinsReserveInformation to get position amounts
+            let totalXAmount = 0;
+            let totalYAmount = 0;
+
+            try {
+              const binsReserve = await dlmmService.getBinsReserveInformation({
+                position: new PublicKey(pos.position),
+                pair: pairAddress,
+                payer: publicKey,
+              });
+
+              console.log("Bins reserve data:", binsReserve);
+              console.log("First bin sample:", binsReserve[0]);
+
+              // Calculate user's share of reserves from all bins
+              for (const bin of binsReserve) {
+                const reserveX =
+                  typeof bin.reserveX === "string"
+                    ? Number(bin.reserveX)
+                    : bin.reserveX;
+                const reserveY =
+                  typeof bin.reserveY === "string"
+                    ? Number(bin.reserveY)
+                    : bin.reserveY;
+                const totalSupply =
+                  typeof bin.totalSupply === "string"
+                    ? Number(bin.totalSupply)
+                    : bin.totalSupply;
+
+                // Calculate user's share: (liquidityShare / totalSupply) * reserve
+                const liquidityShare = Number(bin.liquidityShare.toString());
+
+                console.log(
+                  `Bin ${bin.binId}: liquidityShare=${liquidityShare}, totalSupply=${totalSupply}, reserveX=${reserveX}, reserveY=${reserveY}`,
+                );
+
+                if (totalSupply > 0 && liquidityShare > 0) {
+                  const shareRatio = liquidityShare / totalSupply;
+                  const userReserveX = reserveX * shareRatio;
+                  const userReserveY = reserveY * shareRatio;
+
+                  console.log(
+                    `  ✓ Bin ${bin.binId}: ratio=${shareRatio.toFixed(6)}, User: X=${userReserveX.toFixed(2)}, Y=${userReserveY.toFixed(2)}`,
+                  );
+
+                  totalXAmount += userReserveX;
+                  totalYAmount += userReserveY;
+                } else {
+                  console.log(
+                    `  ✗ Bin ${bin.binId}: SKIPPED (no supply or share)`,
+                  );
+                }
+              }
+            } catch (error) {
+              console.error("Error getting position bin reserves:", error);
+            }
+
+            console.log("Calculated totals (raw):", { totalXAmount, totalYAmount });
+            console.log("Position data summary:", {
               positionMint: pos.positionMint.toString(),
-              totalXAmount: pos.totalXAmount,
-              totalYAmount: pos.totalYAmount,
-              feesX: pos.feeX,
-              feesY: pos.feeY,
+              totalXAmount,
+              totalYAmount,
               lowerBinId: pos.lowerBinId,
               upperBinId: pos.upperBinId,
             });
@@ -149,8 +207,8 @@ export function PortfolioSection() {
               poolPair: `${baseSymbol}/${quoteSymbol}`,
               lowerBinId: pos.lowerBinId || 0,
               upperBinId: pos.upperBinId || 0,
-              totalXAmount: pos.totalXAmount || 0,
-              totalYAmount: pos.totalYAmount || 0,
+              totalXAmount,
+              totalYAmount,
               tokenX: pool.baseToken?.mint || "",
               tokenY: pool.quoteToken?.mint || "",
               tokenXDecimals: pool.baseToken?.decimals || 6,
@@ -178,16 +236,15 @@ export function PortfolioSection() {
   };
   // Remove liquidity from a position
   const handleRemoveLiquidity = async (position: DLMMPosition) => {
+    console.log("🔘 Remove liquidity button clicked for:", position.positionMint);
+
     if (!publicKey || !sendTransaction) {
+      console.log("❌ Wallet not connected");
       alert("Please connect your wallet");
       return;
     }
 
-    const confirmed = confirm(
-      `Remove all liquidity from position ${position.positionMint.slice(0, 8)}...?\n\nThis will withdraw all tokens and close the position.`,
-    );
-
-    if (!confirmed) return;
+    console.log("✅ Wallet connected, proceeding to remove liquidity");
 
     setProcessingPosition(position.positionMint);
 
@@ -605,11 +662,18 @@ export function PortfolioSection() {
                           POSITION: {position.positionMint.slice(0, 8)}...
                         </div>
                       </div>
-                      <div className={`px-2 py-1 border-2 font-mono text-[10px] uppercase tracking-wider ${
-                        position.status === "in-range"
-                          ? "border-green-500 bg-green-500/10 text-green-400"
-                          : "border-amber-500 bg-amber-500/10 text-amber-400"
-                      }`}>
+                      <div
+                        className={`px-2 py-1 border-2 font-mono text-[10px] uppercase tracking-wider cursor-help ${
+                          position.status === "in-range"
+                            ? "border-green-500 bg-green-500/10 text-green-400"
+                            : "border-amber-500 bg-amber-500/10 text-amber-400"
+                        }`}
+                        title={
+                          position.status === "in-range"
+                            ? "Position is earning fees. Price is within your range."
+                            : "Position is OUT OF RANGE. All liquidity has automatically converted to one token. No fees are being earned until price returns to your range."
+                        }
+                      >
                         {position.status === "in-range" ? "IN RANGE" : "OUT OF RANGE"}
                       </div>
                     </div>
@@ -637,10 +701,7 @@ export function PortfolioSection() {
                           ? "0.0000"
                           : (
                               position.totalXAmount /
-                              Math.pow(
-                                10,
-                                selectedPool?.metadata?.extra?.tokenBaseDecimal || 6,
-                              )
+                              10 ** position.tokenXDecimals
                             ).toFixed(4)}
                       </div>
                     </div>
@@ -655,10 +716,7 @@ export function PortfolioSection() {
                           ? "0.0000"
                           : (
                               position.totalYAmount /
-                              Math.pow(
-                                10,
-                                selectedPool?.metadata?.extra?.tokenQuoteDecimal || 9,
-                              )
+                              10 ** position.tokenYDecimals
                             ).toFixed(4)}
                       </div>
                     </div>

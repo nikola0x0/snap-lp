@@ -381,104 +381,149 @@ export function DeploySection() {
         binRange,
       });
 
-      for (const position of maxPositionList) {
-        const { range, binLower, binUpper } = getBinRange(position, activeBin);
-        const currentPosition = userPositions.find(
-          findPosition(position, activeBin),
-        );
+      // Divide amounts equally across positions
+      const numPositions = maxPositionList.length;
+      const xAmountPerPosition = xAmount / numPositions;
+      const yAmountPerPosition = yAmount / numPositions;
 
-        const startIndex =
-          maxLiquidityDistribution.findIndex(
+      console.log("=== LIQUIDITY DEPLOYMENT DEBUG ===");
+      console.log("Total positions:", numPositions);
+      console.log("User amounts - X:", xAmount, "Y:", yAmount);
+      console.log("Per position - X:", xAmountPerPosition, "Y:", yAmountPerPosition);
+
+      const tokenXDecimals =
+        selectedPool!.metadata!.extra?.tokenBaseDecimal || 6;
+      const tokenYDecimals =
+        selectedPool!.metadata!.extra?.tokenQuoteDecimal || 9;
+
+      console.log("Token decimals - X:", tokenXDecimals, "Y:", tokenYDecimals);
+
+      // First pass: prepare positions and get bin arrays
+      const positionDataList = await Promise.all(
+        maxPositionList.map(async (position) => {
+          const { range, binLower, binUpper } = getBinRange(position, activeBin);
+          const currentPosition = userPositions.find(
+            findPosition(position, activeBin),
+          );
+
+          let startIndex = maxLiquidityDistribution.findIndex(
             (item) => item.relativeBinId === range[0],
-          ) ?? 0;
-        const endIndex =
-          (maxLiquidityDistribution.findIndex(
+          );
+          if (startIndex === -1) startIndex = 0;
+
+          let endIndex = maxLiquidityDistribution.findIndex(
             (item) => item.relativeBinId === range[1],
-          ) ?? maxLiquidityDistribution.length - 1) + 1;
-        const liquidityDistribution = maxLiquidityDistribution.slice(
-          startIndex,
-          endIndex,
-        );
+          );
+          if (endIndex === -1) endIndex = maxLiquidityDistribution.length - 1;
+          endIndex = endIndex + 1;
 
-        const binArray = binArrayList.find(
-          (item) =>
-            item.binArrayLowerIndex * 256 <= binLower &&
-            (item.binArrayUpperIndex + 1) * 256 > binUpper,
-        );
+          const liquidityDistribution = maxLiquidityDistribution.slice(
+            startIndex,
+            endIndex,
+          );
 
-        if (!binArray) continue;
+          console.log("Range:", range, "startIndex:", startIndex, "endIndex:", endIndex, "distribution length:", liquidityDistribution.length);
 
-        let positionMint: InstanceType<PublicKeyType>;
+          const binArray = binArrayList.find(
+            (item) =>
+              item.binArrayLowerIndex * 256 <= binLower &&
+              (item.binArrayUpperIndex + 1) * 256 > binUpper,
+          );
 
-        if (!currentPosition) {
-          const createPositionTx = new Transaction();
-          const newPositionMint = Keypair.generate();
+          if (!binArray) return null;
 
-          await sarosDLMM.createPosition({
+          const binArrayLower = await sarosDLMM.getBinArray({
+            binArrayIndex: binArray.binArrayLowerIndex,
             pair,
             payer: publicKey!,
-            relativeBinIdLeft: range[0]!,
-            relativeBinIdRight: range[1]!,
-            binArrayIndex: binArray.binArrayLowerIndex,
-            positionMint: newPositionMint.publicKey,
-            transaction: createPositionTx as any,
+          });
+          const binArrayUpper = await sarosDLMM.getBinArray({
+            binArrayIndex: binArray.binArrayUpperIndex,
+            pair,
+            payer: publicKey!,
           });
 
-          createPositionTx.recentBlockhash = blockhash;
-          createPositionTx.feePayer = publicKey!;
-          txQueue.push(createPositionTx);
-          signersQueue.push([newPositionMint]);
-          positionMint = newPositionMint.publicKey;
-        } else {
-          positionMint = currentPosition.positionMint;
-        }
+          let positionMint: InstanceType<PublicKeyType>;
 
-        const addLiquidityTx = new Transaction();
+          if (!currentPosition) {
+            const createPositionTx = new Transaction();
+            const newPositionMint = Keypair.generate();
 
-        const tokenXDecimals =
-          selectedPool!.metadata!.extra?.tokenBaseDecimal || 6;
-        const tokenYDecimals =
-          selectedPool!.metadata!.extra?.tokenQuoteDecimal || 9;
+            await sarosDLMM.createPosition({
+              pair,
+              payer: publicKey!,
+              relativeBinIdLeft: range[0]!,
+              relativeBinIdRight: range[1]!,
+              binArrayIndex: binArray.binArrayLowerIndex,
+              positionMint: newPositionMint.publicKey,
+              transaction: createPositionTx as any,
+            });
 
-        const amountX = Number(
-          new bigDecimal(Math.pow(10, tokenXDecimals))
-            .multiply(new bigDecimal(xAmount))
-            .getValue(),
-        );
-        const amountY = Number(
-          new bigDecimal(Math.pow(10, tokenYDecimals))
-            .multiply(new bigDecimal(yAmount))
-            .getValue(),
-        );
+            createPositionTx.recentBlockhash = blockhash;
+            createPositionTx.feePayer = publicKey!;
+            txQueue.push(createPositionTx);
+            signersQueue.push([newPositionMint]);
+            positionMint = newPositionMint.publicKey;
+          } else {
+            positionMint = currentPosition.positionMint;
+          }
 
-        const binArrayLower = await sarosDLMM.getBinArray({
-          binArrayIndex: binArray.binArrayLowerIndex,
-          pair,
-          payer: publicKey!,
-        });
-        const binArrayUpper = await sarosDLMM.getBinArray({
-          binArrayIndex: binArray.binArrayUpperIndex,
-          pair,
-          payer: publicKey!,
-        });
+          return {
+            positionMint,
+            liquidityDistribution,
+            binArrayLower: binArrayLower.toString(),
+            binArrayUpper: binArrayUpper.toString(),
+          };
+        }),
+      );
 
-        await sarosDLMM.addLiquidityIntoPosition({
-          amountX,
-          amountY,
-          positionMint,
-          liquidityDistribution,
-          binArrayLower: new SolanaPublicKey(binArrayLower.toString()),
-          binArrayUpper: new SolanaPublicKey(binArrayUpper.toString()),
-          transaction: addLiquidityTx as any,
-          payer: publicKey!,
-          pair,
-        });
+      // Second pass: add liquidity to all positions
+      await Promise.all(
+        positionDataList.map(async (positionData) => {
+          if (!positionData) return;
 
-        addLiquidityTx.recentBlockhash = blockhash;
-        addLiquidityTx.feePayer = publicKey!;
-        txQueue.push(addLiquidityTx);
-        signersQueue.push([]);
-      }
+          const {
+            positionMint,
+            liquidityDistribution,
+            binArrayLower,
+            binArrayUpper,
+          } = positionData;
+
+          const addLiquidityTx = new Transaction();
+
+          const amountX = Number(
+            new bigDecimal(10 ** tokenXDecimals)
+              .multiply(new bigDecimal(xAmountPerPosition))
+              .getValue(),
+          );
+          const amountY = Number(
+            new bigDecimal(10 ** tokenYDecimals)
+              .multiply(new bigDecimal(yAmountPerPosition))
+              .getValue(),
+          );
+
+          console.log("Adding liquidity - amountX (raw):", amountX, "amountY (raw):", amountY);
+          console.log("Position mint:", positionMint.toString());
+          console.log("Liquidity distribution bins:", liquidityDistribution.length);
+
+          await sarosDLMM.addLiquidityIntoPosition({
+            amountX,
+            amountY,
+            positionMint,
+            liquidityDistribution,
+            binArrayLower: new SolanaPublicKey(binArrayLower),
+            binArrayUpper: new SolanaPublicKey(binArrayUpper),
+            transaction: addLiquidityTx as any,
+            payer: publicKey!,
+            pair,
+          });
+
+          addLiquidityTx.recentBlockhash = blockhash;
+          addLiquidityTx.feePayer = publicKey!;
+          txQueue.push(addLiquidityTx);
+          signersQueue.push([]);
+        }),
+      );
 
       if (txQueue.length === 0) {
         throw new Error("No transactions to execute");
